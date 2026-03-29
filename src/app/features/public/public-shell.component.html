@@ -1,0 +1,83 @@
+<header class="main-header">
+  <a class="brand-block" routerLink="/" (click)="closeMobileNav()" aria-label="Golden Seal Life Sciences home">
+    <img
+      class="brand-logo"
+      [src]="brandLogoUrl()"
+      [alt]="settings().companyName + ' logo'"
+      (error)="useFallbackLogo($event)"
+    />
+    <span class="brand-copy">
+      <strong>{{ settings().companyName }}</strong>
+      <small>{{ settings().companyTagline }}</small>
+    </span>
+  </a>
+
+  <button
+    class="menu-toggle"
+    type="button"
+    (click)="toggleMobileNav()"
+    [attr.aria-expanded]="mobileNavOpen()"
+    aria-controls="public-main-nav"
+  >
+    {{ mobileNavOpen() ? 'Close' : 'Menu' }}
+  </button>
+
+  <nav id="public-main-nav" class="nav-links" [class.open]="mobileNavOpen()" aria-label="Main navigation">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileNav()">Home</a>
+    <a routerLink="/products" routerLinkActive="active" (click)="closeMobileNav()">Products</a>
+    <a routerLink="/about" routerLinkActive="active" (click)="closeMobileNav()">About</a>
+    <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileNav()">Contact</a>
+    <a mat-flat-button color="primary" class="nav-cta interactive" routerLink="/contact" (click)="closeMobileNav()">
+      Get In Touch
+    </a>
+  </nav>
+</header>
+
+<main class="content-shell">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="main-footer">
+  <div class="footer-grid">
+    <section class="footer-brand">
+      <h4>{{ settings().companyName }}</h4>
+      <p>{{ settings().companyStory }}</p>
+    </section>
+
+    <section>
+      <h5>Quick Links</h5>
+      <a routerLink="/" (click)="closeMobileNav()">Home</a>
+      <a routerLink="/products" (click)="closeMobileNav()">Solutions</a>
+      <a routerLink="/about" (click)="closeMobileNav()">About</a>
+      <a routerLink="/contact" (click)="closeMobileNav()">Contact</a>
+    </section>
+
+    <section>
+      <h5>Focus Areas</h5>
+      <p>Aqua Probiotics</p>
+      <p>Agricultural Micronutrients</p>
+      <p>Fine Chemicals</p>
+    </section>
+
+    <section>
+      <h5>Contact</h5>
+      <p>{{ settings().contactEmail }}</p>
+      <p>{{ settings().contactPhone }}</p>
+      <p>{{ settings().address }}</p>
+    </section>
+
+    <section>
+      <h5>Connect</h5>
+      <div class="social-links" aria-label="Social profiles">
+        <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+        <a href="https://x.com" target="_blank" rel="noreferrer">X</a>
+        <a href="https://www.youtube.com" target="_blank" rel="noreferrer">YouTube</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer-bottom">
+    <small>© {{ year }} {{ settings().companyName }}. All rights reserved.</small>
+    <small>Advancing science with sustainability, trust, and precision.</small>
+  </div>
+</footer>

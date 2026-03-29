@@ -1,0 +1,42 @@
+{
+  "name": "golden-seal-life-sciences",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "start:portable": ".\\.tools\\node-v22.12.0-win-x64\\node.exe .\\node_modules\\@angular\\cli\\bin\\ng.js serve",
+    "build": "ng build",
+    "build:portable": ".\\.tools\\node-v22.12.0-win-x64\\node.exe .\\node_modules\\@angular\\cli\\bin\\ng.js build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "packageManager": "npm@11.7.0",
+  "dependencies": {
+    "@angular/animations": "^21.2.6",
+    "@angular/cdk": "^21.2.4",
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/material": "^21.2.4",
+    "@angular/platform-browser": "^21.2.0",
+    "@angular/router": "^21.2.0",
+    "@cloudinary/ng": "^2.1.6",
+    "cloudinary-core": "^2.14.1",
+    "firebase": "^12.11.0",
+    "gsap": "^3.14.2",
+    "ngx-image-cropper": "^9.1.6",
+    "rxjs": "~7.8.0",
+    "three": "^0.183.2",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.5",
+    "@angular/cli": "^21.2.5",
+    "@angular/compiler-cli": "^21.2.0",
+    "@types/three": "^0.183.1",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
+  }
+}

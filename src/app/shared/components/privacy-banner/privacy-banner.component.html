@@ -1,0 +1,12 @@
+@if (visible()) {
+  <section class="privacy-banner" aria-live="polite">
+    <p>
+      We use analytics cookies to improve site performance and user experience. You can accept or decline optional
+      tracking.
+    </p>
+    <div class="privacy-actions">
+      <button mat-flat-button color="primary" type="button" (click)="accept()">Accept</button>
+      <button mat-stroked-button type="button" (click)="decline()">Decline</button>
+    </div>
+  </section>
+}

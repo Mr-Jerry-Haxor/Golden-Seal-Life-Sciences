@@ -1,0 +1,298 @@
+@if (announcement().enabled && announcement().mode === 'text' && announcementTextItems().length > 0) {
+  <section class="announcement-strip text-mode reveal" [style.--ticker-duration]="announcementTickerDuration()">
+    <p class="announcement-label">Announcement</p>
+    <div class="ticker-track" aria-live="polite">
+      <p>{{ announcementTickerText() }}</p>
+      <p aria-hidden="true">{{ announcementTickerText() }}</p>
+    </div>
+  </section>
+}
+
+@if (announcement().enabled && announcement().mode === 'image' && announcementImageItems().length > 0) {
+  <section class="announcement-strip image-mode reveal" aria-label="Announcement slideshow">
+    <div class="announcement-media">
+      <img
+        [src]="currentAnnouncementImage()?.imageUrl"
+        [alt]="currentAnnouncementImage()?.alt || 'Announcement slide'"
+      />
+      <div class="announcement-overlay">
+        <p class="announcement-label">Announcement</p>
+        <h2>{{ currentAnnouncementImage()?.caption || 'Latest Updates from Golden Seal Life Sciences' }}</h2>
+      </div>
+    </div>
+    <div class="announcement-dots" role="tablist" aria-label="Announcement slides">
+      @for (slide of announcementImageItems(); track slide.id; let index = $index) {
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="index === currentAnnouncementImageIndex()"
+          [class.active]="index === currentAnnouncementImageIndex()"
+          [attr.aria-label]="'View announcement slide ' + (index + 1)"
+          (click)="goToAnnouncementImage(index)"
+        ></button>
+      }
+    </div>
+  </section>
+}
+
+<section
+  class="hero reveal"
+  [style.background-image]="
+    content().hero.backgroundImageUrl
+      ? 'linear-gradient(122deg, rgba(8, 27, 52, 0.82), rgba(11, 105, 83, 0.72)), url(' + content().hero.backgroundImageUrl + ')'
+      : ''
+  "
+>
+  <div class="hero-decor hero-decor-1" aria-hidden="true"></div>
+  <div class="hero-decor hero-decor-2" aria-hidden="true"></div>
+  <div class="hero-dna" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <p class="eyebrow">Biotechnology + Agriculture + Chemical Innovation</p>
+    <h1>Advancing Science for Sustainable Growth</h1>
+    <p class="hero-copy">
+      {{ content().hero.subheading }} Our solutions in aqua probiotics, agricultural micronutrients, and fine chemicals
+      are engineered to turn molecular precision into real-world productivity.
+    </p>
+
+    <div class="hero-actions">
+      <a mat-flat-button color="primary" class="interactive" [routerLink]="content().hero.ctaPrimaryLink">
+        Explore Solutions
+      </a>
+      <a mat-stroked-button class="interactive" [routerLink]="content().hero.ctaSecondaryLink">Contact Us</a>
+    </div>
+
+    <div class="hero-highlights">
+      @for (highlight of content().highlights; track highlight) {
+        <article class="glass-card">
+          <span class="dot" aria-hidden="true"></span>
+          <p>{{ highlight }}</p>
+        </article>
+      }
+    </div>
+  </div>
+
+  <aside class="hero-metrics glass-card" aria-label="Key focus metrics">
+    <h2>Science-Led Focus Areas</h2>
+    <div>
+      <p class="metric-value">98.7%</p>
+      <p class="metric-label">Batch Purity Consistency</p>
+    </div>
+    <div>
+      <p class="metric-value">24/7</p>
+      <p class="metric-label">Technical Response Support</p>
+    </div>
+    <div>
+      <p class="metric-value">3X</p>
+      <p class="metric-label">Faster Pilot-to-Field Validation</p>
+    </div>
+  </aside>
+</section>
+
+<section class="about reveal" id="about">
+  <div class="about-media glass-card">
+    <img
+      src="https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&w=1200&q=80"
+      alt="Scientists evaluating biotechnology solutions for sustainable agriculture"
+    />
+    <div class="media-overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="about-copy">
+    <p class="section-label">About Golden Seal</p>
+    <h2>Bridging Molecular Science With Field-Level Application</h2>
+    <p>
+      Golden Seal Life Sciences combines advanced biotech research with practical deployment models for aquaculture,
+      agriculture, and industrial chemistry. Every formulation is designed for measurable outcomes, sustainability,
+      and long-term reliability.
+    </p>
+
+    <div class="mission-icons">
+      <article>
+        <span class="icon-badge lab" aria-hidden="true">🧪</span>
+        <div>
+          <h3>Lab Precision</h3>
+          <p>Rigorous formulation and controlled validation workflows.</p>
+        </div>
+      </article>
+      <article>
+        <span class="icon-badge leaf" aria-hidden="true">🌿</span>
+        <div>
+          <h3>Eco-Forward Design</h3>
+          <p>Optimized for sustainability, soil health, and ecological balance.</p>
+        </div>
+      </article>
+      <article>
+        <span class="icon-badge water" aria-hidden="true">💧</span>
+        <div>
+          <h3>Aqua Intelligence</h3>
+          <p>Water-system centered formulations for resilient aquaculture output.</p>
+        </div>
+      </article>
+      <article>
+        <span class="icon-badge industry" aria-hidden="true">⚙️</span>
+        <div>
+          <h3>Industrial Reliability</h3>
+          <p>Consistent quality standards across manufacturing environments.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="categories reveal" id="solutions">
+  <header>
+    <p class="section-label">Product Categories</p>
+    <h2>Purpose-Built Solutions for High-Impact Outcomes</h2>
+    <p>
+      A responsive portfolio built for productivity, trust, and scalability across biotechnology, agriculture, and
+      chemical operations.
+    </p>
+  </header>
+
+  <div class="category-grid">
+    @for (category of categoryCards(); track category.title) {
+      <article class="category-card glass-card interactive">
+        <div class="category-head">
+          <span>{{ category.shortLabel }}</span>
+          <p>{{ category.count }} active products</p>
+        </div>
+        <h3>{{ category.title }}</h3>
+        <p>{{ category.description }}</p>
+        <a mat-stroked-button [routerLink]="category.route">View Category</a>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="innovation reveal">
+  <div class="innovation-copy">
+    <p class="section-label">Innovation & R&D</p>
+    <h2>Research-Driven Formulations, Data-Backed Decisions</h2>
+    <p>
+      Our R&D framework integrates molecular analytics, pilot-scale simulation, and field feedback loops to accelerate
+      reliable innovation.
+    </p>
+    <ul>
+      <li>Biotech and chemistry workflows aligned to application reality</li>
+      <li>Validation across lab, pilot, and deployment environments</li>
+      <li>Rapid adaptation with scientific rigor and compliance-first controls</li>
+    </ul>
+    <a mat-flat-button color="primary" class="interactive" routerLink="/contact">Connect With R&D Team</a>
+  </div>
+
+  <div class="innovation-visual glass-card" aria-hidden="true">
+    <div class="floating molecule"></div>
+    <div class="floating droplet"></div>
+    <div class="floating wave"></div>
+
+    <article>
+      <p>Lab Validation</p>
+      <strong>42 Protocols</strong>
+    </article>
+    <article>
+      <p>Field Trials</p>
+      <strong>120+ Deployments</strong>
+    </article>
+    <article>
+      <p>Optimization Cycles</p>
+      <strong>Monthly Iterations</strong>
+    </article>
+  </div>
+</section>
+
+<section class="impact reveal">
+  <header>
+    <p class="section-label">Impact</p>
+    <h2>Measurable Value Across Yield, Sustainability, and Efficiency</h2>
+  </header>
+
+  <div class="impact-grid">
+    @for (metric of impactMetrics; track metric.label) {
+      <article class="impact-card glass-card">
+        <p class="metric-title">{{ metric.label }}</p>
+        <p class="metric-counter">
+          <span>{{ metric.prefix }}</span>
+          <span class="counter-value" [attr.data-target]="metric.value">0</span>
+          <span>{{ metric.suffix }}</span>
+        </p>
+        <p class="metric-note">{{ metric.description }}</p>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="trust reveal">
+  <header>
+    <p class="section-label">Trust & Partnerships</p>
+    <h2>Built With Long-Term Collaboration in Mind</h2>
+  </header>
+
+  <div class="trust-carousel">
+    @for (testimonial of testimonials; track testimonial.company) {
+      <article class="testimonial-card glass-card">
+        <p class="quote">“{{ testimonial.quote }}”</p>
+        <div>
+          <h3>{{ testimonial.author }}</h3>
+          <p>{{ testimonial.company }}</p>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="featured reveal">
+  <header>
+    <p class="section-label">Featured Portfolio</p>
+    <h2>Current Products Across Priority Solution Tracks</h2>
+  </header>
+
+  @for (section of sectionsWithProducts(); track section.id) {
+    <div class="feature-strip glass-card">
+      <div class="strip-head">
+        <div>
+          <h3>{{ section.title }}</h3>
+          <p>{{ section.summary }}</p>
+        </div>
+        <a mat-button class="interactive" routerLink="/products">View all products</a>
+      </div>
+
+      <div class="strip-products">
+        @if (section.products.length === 0) {
+          <mat-card class="placeholder-card">
+            <p>No products assigned yet. Add products from the admin dashboard.</p>
+          </mat-card>
+        } @else {
+          @for (product of section.products; track product.id) {
+            <mat-card class="product-card interactive">
+              <img
+                [src]="
+                  product.imageUrl ||
+                  'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=60'
+                "
+                [alt]="product.name"
+              />
+              <div>
+                <h4>{{ product.name }}</h4>
+                <p>{{ product.shortDescription }}</p>
+                <a mat-stroked-button [routerLink]="['/products', product.slug]">Details</a>
+              </div>
+            </mat-card>
+          }
+        }
+      </div>
+    </div>
+  }
+</section>
+
+<section class="cta reveal" aria-label="Primary call to action">
+  <p class="section-label">Next Step</p>
+  <h2>Partner with us for a more productive and sustainable future</h2>
+  <p>
+    Work with a team focused on scientific excellence, practical deployment, and long-term business performance.
+  </p>
+  <div class="cta-actions">
+    <a mat-flat-button color="primary" class="interactive" routerLink="/contact">Start a Conversation</a>
+    <a mat-stroked-button class="interactive" routerLink="/products">Explore Product Lines</a>
+  </div>
+</section>

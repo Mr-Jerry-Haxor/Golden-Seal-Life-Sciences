@@ -1,0 +1,31 @@
+@if (product(); as item) {
+  <article class="product-detail">
+    <img
+      [src]="item.imageUrl || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=60'"
+      [alt]="item.name"
+    />
+
+    <div>
+      <p class="category">{{ item.category }}</p>
+      <h1>{{ item.name }}</h1>
+      <p class="summary">{{ item.shortDescription }}</p>
+      <p class="body">{{ item.longDescription }}</p>
+
+      @if (item.tags.length) {
+        <div class="tags">
+          @for (tag of item.tags; track tag) {
+            <span>{{ tag }}</span>
+          }
+        </div>
+      }
+
+      <a mat-flat-button color="primary" routerLink="/contact">Request Consultation</a>
+    </div>
+  </article>
+} @else {
+  <section class="missing">
+    <h2>Product not found</h2>
+    <p>The product may have been moved or is not published.</p>
+    <a mat-stroked-button routerLink="/products">Back to Products</a>
+  </section>
+}

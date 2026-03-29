@@ -1,0 +1,30 @@
+.about-wrap {
+  border-radius: 1.4rem;
+  padding: clamp(1.2rem, 2.8vw, 2rem);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--surface, #fff) 90%, #d9efdf 10%), #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #1a7a50) 20%, transparent 80%);
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.74rem;
+  color: var(--text-muted, #4a5d50);
+}
+
+h1 {
+  margin: 0.5rem 0;
+  font-family: var(--font-heading);
+}
+
+.intro {
+  margin: 0 0 1rem;
+  color: var(--text-primary, #122117);
+  font-weight: 500;
+}
+
+article {
+  color: var(--text-muted, #4a5d50);
+  line-height: 1.7;
+}

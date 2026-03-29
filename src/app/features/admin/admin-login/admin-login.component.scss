@@ -1,0 +1,33 @@
+:host {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+}
+
+mat-card {
+  width: min(94vw, 420px);
+  border-radius: 1.2rem;
+  padding: 0.4rem;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+}
+
+p {
+  margin: 0.4rem 0 1rem;
+  color: var(--text-muted, #4a5d50);
+}
+
+form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.error {
+  margin: 0;
+  color: #c62828;
+  font-size: 0.9rem;
+}

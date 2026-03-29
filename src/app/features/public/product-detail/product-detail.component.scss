@@ -1,0 +1,81 @@
+.product-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  background: color-mix(in srgb, var(--surface, #fff) 94%, var(--brand-secondary, #6dbb7a) 6%);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #1a7a50) 20%, transparent 80%);
+  border-radius: 1.4rem;
+  overflow: hidden;
+}
+
+.product-detail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 360px;
+}
+
+.product-detail > div {
+  padding: clamp(1rem, 2.6vw, 2rem);
+}
+
+.category {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--text-muted, #4a5d50);
+}
+
+h1 {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-heading);
+}
+
+.summary {
+  color: var(--text-primary, #122117);
+  margin: 0.8rem 0;
+  font-size: 1.02rem;
+}
+
+.body {
+  color: var(--text-muted, #4a5d50);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.2rem;
+}
+
+.tags span {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-secondary, #6dbb7a) 20%, #fff 80%);
+}
+
+.missing {
+  border: 1px dashed color-mix(in srgb, var(--brand-primary, #1a7a50) 34%, transparent 66%);
+  border-radius: 1rem;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.missing h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+}
+
+.missing p {
+  color: var(--text-muted, #4a5d50);
+}
+
+@media (max-width: 920px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+}

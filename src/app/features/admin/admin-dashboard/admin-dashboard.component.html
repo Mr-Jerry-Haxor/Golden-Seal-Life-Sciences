@@ -1,0 +1,552 @@
+<section class="admin-wrap">
+  <header>
+    <div>
+      <p class="eyebrow">CMS Portal</p>
+      <h1>Golden Seal Admin</h1>
+      <p>Manage pages, products, announcements, media, and design settings from one dashboard.</p>
+    </div>
+    <button mat-stroked-button type="button" (click)="logout()">Logout</button>
+  </header>
+
+  <mat-tab-group class="admin-tabs" dynamicHeight [animationDuration]="'180ms'" [disableRipple]="true">
+    <mat-tab label="Content">
+      <section class="tab-grid">
+        <mat-card>
+          <h3>Hero Content</h3>
+          <div class="form-grid two-up">
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Heading</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.heading" name="heroHeading" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Subheading</mat-label>
+              <textarea matInput rows="4" [(ngModel)]="contentDraft.hero.subheading" name="heroSubheading"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Primary CTA Label</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.ctaPrimaryLabel" name="heroCtaPrimaryLabel" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Primary CTA Link</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.ctaPrimaryLink" name="heroCtaPrimaryLink" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Secondary CTA Label</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.ctaSecondaryLabel" name="heroCtaSecondaryLabel" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Secondary CTA Link</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.ctaSecondaryLink" name="heroCtaSecondaryLink" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Hero Background Image URL</mat-label>
+              <input matInput [(ngModel)]="contentDraft.hero.backgroundImageUrl" name="heroBackgroundImage" />
+            </mat-form-field>
+          </div>
+        </mat-card>
+
+        <mat-card>
+          <h3>Company Settings</h3>
+
+          <div class="logo-manager">
+            <img [src]="settingsDraft.logoUrl || fallbackLogoUrl" alt="Company logo preview" loading="lazy" />
+            <div class="logo-manager-fields">
+              <mat-form-field appearance="outline" class="span-2">
+                <mat-label>Logo URL</mat-label>
+                <input matInput [(ngModel)]="settingsDraft.logoUrl" name="companyLogoUrl" />
+              </mat-form-field>
+              <div class="logo-actions">
+                <label class="upload-pill" for="logo-upload-input">Upload logo</label>
+                <input
+                  id="logo-upload-input"
+                  type="file"
+                  accept="image/*"
+                  (change)="uploadCompanyLogo($event)"
+                />
+                <button mat-button type="button" (click)="clearCompanyLogo()">Reset to default</button>
+              </div>
+              @if (isUploadingLogo) {
+                <p class="helper-text">{{ logoUploadProgressText }}</p>
+              }
+            </div>
+          </div>
+
+          <h4>Pick Logo From Media Library</h4>
+          <div class="media-mini-grid logo-picker">
+            @for (item of media(); track item.id) {
+              <article>
+                <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                <button mat-button type="button" (click)="useMediaAsCompanyLogo(item.downloadUrl)">Use as logo</button>
+              </article>
+            }
+          </div>
+
+          <div class="form-grid two-up">
+            <mat-form-field appearance="outline">
+              <mat-label>Company Name</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.companyName" name="companyName" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tagline</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.companyTagline" name="companyTagline" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Company Story</mat-label>
+              <textarea matInput rows="6" [(ngModel)]="settingsDraft.companyStory" name="companyStory"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Contact Email</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.contactEmail" name="contactEmail" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Contact Phone</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.contactPhone" name="contactPhone" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>WhatsApp Number</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.whatsappNumber" name="whatsappNumber" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Address</mat-label>
+              <input matInput [(ngModel)]="settingsDraft.address" name="address" />
+            </mat-form-field>
+          </div>
+        </mat-card>
+
+        <mat-card class="full-width">
+          <div class="card-head">
+            <h3>Hero Highlights</h3>
+            <button mat-stroked-button type="button" (click)="addHighlight()">+ Add Highlight</button>
+          </div>
+          <div class="stack-list">
+            @for (highlight of contentDraft.highlights; track $index; let index = $index) {
+              <article class="inline-editor">
+                <mat-form-field appearance="outline">
+                  <mat-label>Highlight {{ index + 1 }}</mat-label>
+                  <input matInput [(ngModel)]="contentDraft.highlights[index]" [name]="'highlight' + index" />
+                </mat-form-field>
+                <div class="row-actions">
+                  <button mat-button type="button" (click)="moveHighlight(index, -1)">Up</button>
+                  <button mat-button type="button" (click)="moveHighlight(index, 1)">Down</button>
+                  <button mat-button type="button" (click)="removeHighlight(index)">Delete</button>
+                </div>
+              </article>
+            }
+          </div>
+        </mat-card>
+
+        <mat-card class="full-width">
+          <div class="card-head">
+            <h3>Homepage Sections</h3>
+            <button mat-stroked-button type="button" (click)="addSection()">+ Add Section</button>
+          </div>
+          <div class="sections-grid">
+            @for (section of contentDraft.sections; track section.id; let index = $index) {
+              <article>
+                <div class="row-actions">
+                  <button mat-button type="button" (click)="moveSection(index, -1)">Up</button>
+                  <button mat-button type="button" (click)="moveSection(index, 1)">Down</button>
+                  <button mat-button type="button" (click)="removeSection(index)">Delete</button>
+                </div>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Section ID</mat-label>
+                  <input matInput [(ngModel)]="contentDraft.sections[index].id" [name]="'sectionId' + index" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Section Title</mat-label>
+                  <input matInput [(ngModel)]="contentDraft.sections[index].title" [name]="'sectionTitle' + index" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Section Summary</mat-label>
+                  <textarea
+                    matInput
+                    rows="3"
+                    [(ngModel)]="contentDraft.sections[index].summary"
+                    [name]="'sectionSummary' + index"
+                  ></textarea>
+                </mat-form-field>
+              </article>
+            }
+          </div>
+        </mat-card>
+
+        <mat-card class="full-width announcement-card">
+          <h3>Homepage Announcement Bar</h3>
+          <p class="helper-text">
+            Enable announcements and choose between scrolling text or image slideshow mode. All content is stored in
+            Firestore and images are uploaded to Cloudinary.
+          </p>
+
+          <mat-slide-toggle [(ngModel)]="contentDraft.announcement.enabled" name="announcementEnabled">
+            Enable announcement section on homepage
+          </mat-slide-toggle>
+
+          <div class="announcement-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Announcement Type</mat-label>
+              <mat-select
+                [(ngModel)]="contentDraft.announcement.mode"
+                name="announcementMode"
+                (ngModelChange)="setAnnouncementMode($event)"
+              >
+                <mat-option value="text">Text-based scrolling announcements</mat-option>
+                <mat-option value="image">Image slideshow announcements</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            @if (contentDraft.announcement.mode === 'text') {
+              <mat-form-field appearance="outline">
+                <mat-label>Separator Icon</mat-label>
+                <mat-select [(ngModel)]="contentDraft.announcement.separator" name="announcementSeparator">
+                  @for (option of separatorOptions; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Scroll Duration (seconds)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="10"
+                  max="90"
+                  [(ngModel)]="contentDraft.announcement.scrollSpeedSeconds"
+                  name="announcementScrollSpeed"
+                />
+              </mat-form-field>
+            }
+
+            @if (contentDraft.announcement.mode === 'image') {
+              <mat-form-field appearance="outline">
+                <mat-label>Slide Interval (milliseconds)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="2200"
+                  max="15000"
+                  step="100"
+                  [(ngModel)]="contentDraft.announcement.slideshowIntervalMs"
+                  name="announcementSlideInterval"
+                />
+              </mat-form-field>
+            }
+          </div>
+
+          @if (contentDraft.announcement.mode === 'text') {
+            <div class="card-head">
+              <h4>Text Announcements</h4>
+              <button mat-stroked-button type="button" (click)="addAnnouncementTextItem()">+ Add Text</button>
+            </div>
+
+            <div class="stack-list">
+              @for (textItem of contentDraft.announcement.textItems; track textItem.id; let index = $index) {
+                <article class="inline-editor">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Announcement {{ index + 1 }}</mat-label>
+                    <input
+                      matInput
+                      [(ngModel)]="contentDraft.announcement.textItems[index].text"
+                      [name]="'announcementText' + index"
+                    />
+                  </mat-form-field>
+                  <div class="row-actions">
+                    <button mat-button type="button" (click)="moveAnnouncementTextItem(index, -1)">Up</button>
+                    <button mat-button type="button" (click)="moveAnnouncementTextItem(index, 1)">Down</button>
+                    <button mat-button type="button" (click)="removeAnnouncementTextItem(index)">Delete</button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+
+          @if (contentDraft.announcement.mode === 'image') {
+            <div class="announcement-upload">
+              <label>Upload Announcement Images (multiple):</label>
+              <input type="file" accept="image/*" multiple (change)="uploadAnnouncementImages($event)" />
+              @if (isUploadingAnnouncementImages) {
+                <p class="helper-text">{{ announcementUploadProgressText }}</p>
+              }
+            </div>
+
+            <h4>Add From Media Library</h4>
+            <div class="media-mini-grid">
+              @for (item of media(); track item.id) {
+                <article>
+                  <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                  <button mat-button type="button" (click)="addMediaToAnnouncement(item.downloadUrl, item.name)">
+                    Add
+                  </button>
+                </article>
+              }
+            </div>
+
+            <h4>Slideshow Sequence</h4>
+            <div class="announcement-images-list">
+              @for (image of contentDraft.announcement.imageItems; track image.id; let index = $index) {
+                <article>
+                  <img [src]="image.imageUrl" [alt]="image.alt || 'Announcement image'" loading="lazy" />
+                  <div class="announcement-image-fields">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Image URL</mat-label>
+                      <input
+                        matInput
+                        [(ngModel)]="contentDraft.announcement.imageItems[index].imageUrl"
+                        [name]="'announcementImageUrl' + index"
+                      />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Caption</mat-label>
+                      <input
+                        matInput
+                        [(ngModel)]="contentDraft.announcement.imageItems[index].caption"
+                        [name]="'announcementImageCaption' + index"
+                      />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Alt Text</mat-label>
+                      <input
+                        matInput
+                        [(ngModel)]="contentDraft.announcement.imageItems[index].alt"
+                        [name]="'announcementImageAlt' + index"
+                      />
+                    </mat-form-field>
+                  </div>
+                  <div class="row-actions">
+                    <button mat-button type="button" (click)="moveAnnouncementImage(index, -1)">Up</button>
+                    <button mat-button type="button" (click)="moveAnnouncementImage(index, 1)">Down</button>
+                    <button mat-button type="button" (click)="removeAnnouncementImage(index)">Delete</button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+
+          <button mat-flat-button color="primary" type="button" (click)="saveContentOnly()">
+            Save Announcement & Homepage Content
+          </button>
+        </mat-card>
+
+        <mat-card class="full-width action-card">
+          <button mat-flat-button color="primary" type="button" (click)="saveContentAndSettings()">
+            Save All Content & Settings
+          </button>
+        </mat-card>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Products">
+      <section class="tab-grid products-grid">
+        <mat-card>
+          <div class="product-list-head">
+            <h3>Existing Products</h3>
+            <button mat-stroked-button type="button" (click)="prepareNewProduct()">+ New</button>
+          </div>
+          <div class="product-list">
+            @for (product of products(); track product.id) {
+              <article>
+                <div>
+                  <h4>{{ product.name }}</h4>
+                  <p>{{ product.category }}</p>
+                </div>
+                <div class="actions">
+                  <button mat-button type="button" (click)="editProduct(product)">Edit</button>
+                  <button mat-button type="button" (click)="deleteProduct(product.id)">Delete</button>
+                </div>
+              </article>
+            }
+          </div>
+        </mat-card>
+
+        <mat-card>
+          <h3>{{ selectedProductId ? 'Edit Product' : 'Create Product' }}</h3>
+
+          <div class="form-grid two-up">
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input matInput [(ngModel)]="productDraft.name" name="productName" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Category</mat-label>
+              <mat-select [(ngModel)]="productDraft.category" name="productCategory">
+                @for (category of categories; track category) {
+                  <mat-option [value]="category">{{ category }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Assign to Section</mat-label>
+              <mat-select [(ngModel)]="productDraft.sectionId" name="productSection">
+                @for (section of sectionOptions(); track section.id) {
+                  <mat-option [value]="section.id">{{ section.title }} ({{ section.id }})</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Short Description</mat-label>
+              <textarea matInput rows="3" [(ngModel)]="productDraft.shortDescription" name="productShortDesc"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Detailed Description</mat-label>
+              <textarea matInput rows="6" [(ngModel)]="productDraft.longDescription" name="productLongDesc"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Image URL</mat-label>
+              <input matInput [(ngModel)]="productDraft.imageUrl" name="productImageUrl" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Tags (comma separated)</mat-label>
+              <input matInput [(ngModel)]="productTagsInput" name="productTags" />
+            </mat-form-field>
+          </div>
+
+          <mat-slide-toggle [(ngModel)]="productDraft.highlighted" name="productHighlighted">
+            Highlight on homepage
+          </mat-slide-toggle>
+
+          <button mat-flat-button color="primary" type="button" (click)="saveProduct()">Save Product</button>
+        </mat-card>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Media">
+      <section class="tab-grid">
+        <mat-card>
+          <h3>Upload Image (Free Crop or Original)</h3>
+          <p class="helper-text">
+            Free crop supports any landscape or portrait frame. You can also skip cropping and upload the original image.
+          </p>
+          <input type="file" accept="image/*" (change)="onFileChange($event)" />
+
+          @if (imageChangedEvent) {
+            <mat-slide-toggle [(ngModel)]="maintainCropAspectRatio" name="maintainCropAspectRatio">
+              Lock crop aspect ratio (optional)
+            </mat-slide-toggle>
+
+            @if (maintainCropAspectRatio) {
+              <mat-form-field appearance="outline">
+                <mat-label>Aspect Ratio</mat-label>
+                <input matInput type="number" min="0.2" step="0.1" [(ngModel)]="cropAspectRatio" name="cropAspectRatio" />
+              </mat-form-field>
+            }
+
+            <image-cropper
+              [imageChangedEvent]="imageChangedEvent"
+              [maintainAspectRatio]="maintainCropAspectRatio"
+              [aspectRatio]="cropAspectRatio"
+              format="jpeg"
+              (imageCropped)="onImageCropped($event)"
+            ></image-cropper>
+
+            <div class="row-actions">
+              <button mat-flat-button color="primary" type="button" (click)="uploadCroppedImage()">Upload Cropped</button>
+              <button mat-stroked-button type="button" (click)="uploadOriginalImage()">Upload Original</button>
+            </div>
+          }
+        </mat-card>
+
+        <mat-card class="full-width">
+          <h3>Media Library</h3>
+          <div class="media-grid">
+            @for (item of media(); track item.id) {
+              <article>
+                <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                <div>
+                  <strong>{{ item.name }}</strong>
+                  <small>{{ item.hash.slice(0, 12) }}...</small>
+                  <button mat-button type="button" (click)="useMedia(item.downloadUrl)">Use in product draft</button>
+                  <button mat-button type="button" (click)="addMediaToAnnouncement(item.downloadUrl, item.name)">
+                    Use in announcement
+                  </button>
+                  <button
+                    mat-button
+                    type="button"
+                    [disabled]="isDeletingMedia(item.id)"
+                    (click)="deleteMedia(item)"
+                  >
+                    {{ isDeletingMedia(item.id) ? 'Deleting...' : 'Delete media' }}
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        </mat-card>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Theme">
+      <section class="tab-grid">
+        <mat-card class="theme-card">
+          <h3>Visual Theme Controls</h3>
+          <div class="color-grid">
+            <label>
+              Brand Primary
+              <input type="color" [(ngModel)]="themeDraft.brandPrimary" name="brandPrimary" />
+            </label>
+            <label>
+              Brand Secondary
+              <input type="color" [(ngModel)]="themeDraft.brandSecondary" name="brandSecondary" />
+            </label>
+            <label>
+              Accent
+              <input type="color" [(ngModel)]="themeDraft.accent" name="accent" />
+            </label>
+            <label>
+              Background Start
+              <input type="color" [(ngModel)]="themeDraft.backgroundStart" name="backgroundStart" />
+            </label>
+            <label>
+              Background End
+              <input type="color" [(ngModel)]="themeDraft.backgroundEnd" name="backgroundEnd" />
+            </label>
+            <label>
+              Surface
+              <input type="color" [(ngModel)]="themeDraft.surface" name="surface" />
+            </label>
+            <label>
+              Text Primary
+              <input type="color" [(ngModel)]="themeDraft.textPrimary" name="textPrimary" />
+            </label>
+            <label>
+              Text Muted
+              <input type="color" [(ngModel)]="themeDraft.textMuted" name="textMuted" />
+            </label>
+            <label>
+              Pointer Color
+              <input type="color" [(ngModel)]="themeDraft.pointerColor" name="pointerColor" />
+            </label>
+          </div>
+          <button mat-flat-button color="primary" type="button" (click)="saveTheme()">Save Theme</button>
+        </mat-card>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Analytics">
+      <section class="tab-grid">
+        <mat-card>
+          <h3>Privacy and Data Collection</h3>
+          <p>
+            This project uses consent-based analytics. Visitors can opt in through the privacy banner. Anonymous event
+            metadata is stored in Firebase under <code>analytics_events</code>.
+          </p>
+          <p>
+            Contact details are only captured via explicit form submission with user consent and are stored in Firebase
+            under <code>leads</code>.
+          </p>
+          <p>
+            All tracking and communication flows are intentionally implemented for transparent and ethical compliance.
+          </p>
+        </mat-card>
+      </section>
+    </mat-tab>
+  </mat-tab-group>
+</section>

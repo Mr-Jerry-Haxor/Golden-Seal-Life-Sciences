@@ -1,0 +1,34 @@
+.privacy-banner {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(92vw, 420px);
+  z-index: 100;
+  background: color-mix(in srgb, var(--surface, #fff) 90%, #d6f0e0 10%);
+  color: var(--text-primary, #122117);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #1a7a50) 40%, transparent 60%);
+  border-radius: 1rem;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.15);
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.privacy-banner p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.privacy-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .privacy-banner {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+  }
+}

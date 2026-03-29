@@ -1,0 +1,38 @@
+<section class="products-hero">
+  <p class="eyebrow">Catalog</p>
+  <h1>Product Portfolio</h1>
+  <p>
+    Browse precision formulations across aqua probiotics, crop nutrition, and high-purity chemical lines tailored for
+    measurable performance.
+  </p>
+</section>
+
+@for (group of groupedProducts(); track group.category) {
+  <section class="group">
+    <header>
+      <h2>{{ group.category }}</h2>
+      <p>{{ group.products.length }} product{{ group.products.length === 1 ? '' : 's' }}</p>
+    </header>
+
+    <div class="grid">
+      @for (product of group.products; track product.id) {
+        <a class="card-link interactive" [routerLink]="['/products', product.slug]">
+          <mat-card class="product-card">
+            <img [src]="product.imageUrl || 'https://images.unsplash.com/photo-1550565118-3a14e8d0386f?auto=format&fit=crop&w=900&q=60'" [alt]="product.name" />
+            <div>
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.shortDescription }}</p>
+              <span>Read details →</span>
+            </div>
+          </mat-card>
+        </a>
+      }
+    </div>
+  </section>
+}
+
+@if (products().length === 0) {
+  <section class="empty-state">
+    <p>No products are published yet. Add products from the admin dashboard.</p>
+  </section>
+}

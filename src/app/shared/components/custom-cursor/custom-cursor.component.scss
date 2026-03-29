@@ -1,0 +1,26 @@
+:host {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.cursor-orb {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff8d8 0%, var(--pointer-color, #e9b44c) 60%, transparent 100%);
+  mix-blend-mode: multiply;
+  opacity: 0.8;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--pointer-color, #e9b44c) 60%, transparent 40%);
+  transform: translate(-50%, -50%);
+}
+
+@media (pointer: coarse) {
+  :host {
+    display: none;
+  }
+}

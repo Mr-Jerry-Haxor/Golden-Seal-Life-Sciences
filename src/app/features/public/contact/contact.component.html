@@ -1,0 +1,61 @@
+<section class="contact-wrap">
+  <div>
+    <p class="eyebrow">Connect With Us</p>
+    <h1>Talk to our science and application team</h1>
+    <p>
+      Share your requirements for aquaculture, agriculture, or fine chemical applications. We respond with practical,
+      performance-focused guidance.
+    </p>
+
+    <ul>
+      <li>Email: {{ settings().contactEmail }}</li>
+      <li>Phone: {{ settings().contactPhone }}</li>
+      <li>WhatsApp: {{ settings().whatsappNumber }}</li>
+      <li>Address: {{ settings().address }}</li>
+    </ul>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="contact-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <mat-error>Name is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <mat-error>Enter a valid email.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Company</mat-label>
+      <input matInput formControlName="company" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Message</mat-label>
+      <textarea matInput rows="5" formControlName="message"></textarea>
+      @if (form.controls.message.invalid && form.controls.message.touched) {
+        <mat-error>Message is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-checkbox formControlName="consent">
+      I consent to storing my submitted details for follow-up communication.
+    </mat-checkbox>
+
+    <button mat-flat-button color="primary" type="submit" [disabled]="submitting">
+      {{ submitting ? 'Submitting...' : 'Submit Inquiry' }}
+    </button>
+  </form>
+</section>
