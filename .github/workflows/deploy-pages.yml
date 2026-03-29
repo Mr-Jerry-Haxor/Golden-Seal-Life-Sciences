@@ -8,16 +8,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -48,7 +46,7 @@ jobs:
           echo "Using base href: ${BASE_HREF}"
           npm run build -- --configuration production --base-href "${BASE_HREF}" --deploy-url "${BASE_HREF}"
 
-      - name: Configure SPA fallback and metadata
+      - name: Prepare publish directory
         shell: bash
         run: |
           DIST_ROOT="dist/golden-seal-life-sciences"
@@ -63,7 +61,7 @@ jobs:
             exit 1
           fi
 
-          echo "Using Pages directory: ${PAGES_DIR}"
+          echo "Using publish directory: ${PAGES_DIR}"
           echo "PAGES_DIR=${PAGES_DIR}" >> "$GITHUB_ENV"
 
           cp "${PAGES_DIR}/index.html" "${PAGES_DIR}/404.html"
@@ -73,25 +71,10 @@ jobs:
             cp "CNAME" "${PAGES_DIR}/CNAME"
           fi
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          enablement: true
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ${{ env.PAGES_DIR }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ${{ env.PAGES_DIR }}
+          force_orphan: true
