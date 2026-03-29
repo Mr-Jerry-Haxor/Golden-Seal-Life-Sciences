@@ -51,12 +51,26 @@ jobs:
       - name: Configure SPA fallback and metadata
         shell: bash
         run: |
-          DIST_DIR="dist/golden-seal-life-sciences"
-          cp "${DIST_DIR}/index.html" "${DIST_DIR}/404.html"
-          touch "${DIST_DIR}/.nojekyll"
+          DIST_ROOT="dist/golden-seal-life-sciences"
+
+          if [ -f "${DIST_ROOT}/browser/index.html" ]; then
+            PAGES_DIR="${DIST_ROOT}/browser"
+          elif [ -f "${DIST_ROOT}/index.html" ]; then
+            PAGES_DIR="${DIST_ROOT}"
+          else
+            echo "Unable to locate index.html in expected build output paths."
+            find dist -maxdepth 4 -type f -name "index.html" || true
+            exit 1
+          fi
+
+          echo "Using Pages directory: ${PAGES_DIR}"
+          echo "PAGES_DIR=${PAGES_DIR}" >> "$GITHUB_ENV"
+
+          cp "${PAGES_DIR}/index.html" "${PAGES_DIR}/404.html"
+          touch "${PAGES_DIR}/.nojekyll"
 
           if [ -f "CNAME" ]; then
-            cp "CNAME" "${DIST_DIR}/CNAME"
+            cp "CNAME" "${PAGES_DIR}/CNAME"
           fi
 
       - name: Setup Pages
@@ -65,7 +79,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/golden-seal-life-sciences
+          path: ${{ env.PAGES_DIR }}
 
   deploy:
     needs: build
