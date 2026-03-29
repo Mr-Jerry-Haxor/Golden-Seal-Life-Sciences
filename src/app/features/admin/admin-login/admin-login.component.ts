@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { AdminAuthService } from '../../../core/services/admin-auth.service';
@@ -17,6 +18,7 @@ import { AdminAuthService } from '../../../core/services/admin-auth.service';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatIconModule,
     MatButtonModule
   ],
   templateUrl: './admin-login.component.html',
@@ -33,7 +35,12 @@ export class AdminLoginComponent {
   });
 
   loading = false;
+  showPassword = false;
   errorMessage = '';
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   async login(): Promise<void> {
     if (this.form.invalid || this.loading) {

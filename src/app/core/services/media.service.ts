@@ -42,7 +42,7 @@ export class MediaService {
       id: crypto.randomUUID(),
       name: originalFileName,
       hash,
-      storagePath: `cloudinary:${hash}`,
+      storagePath: `cloudinary:${cloudinaryUpload.publicId}`,
       downloadUrl: cloudinaryUpload.secureUrl,
       cloudinaryPublicId: cloudinaryUpload.publicId,
       cloudinaryDeleteToken: cloudinaryUpload.deleteToken,
@@ -133,8 +133,20 @@ export class MediaService {
 
   private async deleteFromCloudinary(item: MediaItem): Promise<void> {
     if (item.cloudinaryDeleteToken?.trim()) {
-      await this.deleteFromCloudinaryByToken(item.cloudinaryDeleteToken.trim());
-      return;
+      try {
+        await this.deleteFromCloudinaryByToken(item.cloudinaryDeleteToken.trim());
+        return;
+      } catch (error) {
+        if (!isCloudinaryDeleteConfigured(cloudinaryConfig)) {
+          throw new Error(
+            `Cloudinary delete token is invalid or expired. ${
+              error instanceof Error ? error.message : 'Configure apiKey/apiSecret for permanent deletes.'
+            }`
+          );
+        }
+
+        console.warn('Cloudinary delete token failed, falling back to signed delete.', error);
+      }
     }
 
     if (!isCloudinaryDeleteConfigured(cloudinaryConfig)) {
@@ -145,7 +157,8 @@ export class MediaService {
 
     const publicId =
       item.cloudinaryPublicId?.trim() ||
-      item.storagePath.replace(/^cloudinary:/, '').trim();
+      this.extractCloudinaryPublicIdFromUrl(item.downloadUrl) ||
+      this.normalizeCloudinaryPublicIdFromStoragePath(item.storagePath);
 
     if (!publicId) {
       throw new Error('Missing Cloudinary public ID for delete operation.');
@@ -228,6 +241,56 @@ export class MediaService {
     return Array.from(new Uint8Array(digest))
       .map((byte) => byte.toString(16).padStart(2, '0'))
       .join('');
+  }
+
+  private normalizeCloudinaryPublicIdFromStoragePath(storagePath: string): string {
+    const rawValue = storagePath.replace(/^cloudinary:/, '').trim();
+    if (!rawValue) {
+      return '';
+    }
+
+    if (rawValue.includes('/')) {
+      return rawValue;
+    }
+
+    return `${cloudinaryConfig.folder}/${rawValue}`;
+  }
+
+  private extractCloudinaryPublicIdFromUrl(downloadUrl: string): string {
+    if (!downloadUrl.trim()) {
+      return '';
+    }
+
+    try {
+      const parsedUrl = new URL(downloadUrl);
+      const marker = '/upload/';
+      const markerIndex = parsedUrl.pathname.indexOf(marker);
+
+      if (markerIndex === -1) {
+        return '';
+      }
+
+      let segments = parsedUrl.pathname
+        .slice(markerIndex + marker.length)
+        .split('/')
+        .filter(Boolean);
+
+      const versionIndex = segments.findIndex((segment) => /^v\d+$/.test(segment));
+      if (versionIndex >= 0) {
+        segments = segments.slice(versionIndex + 1);
+      }
+
+      if (segments.length === 0) {
+        return '';
+      }
+
+      const lastSegmentIndex = segments.length - 1;
+      segments[lastSegmentIndex] = segments[lastSegmentIndex].replace(/\.[a-z0-9]+$/i, '');
+
+      return segments.join('/');
+    } catch {
+      return '';
+    }
   }
 
   private async uploadAsBase64(

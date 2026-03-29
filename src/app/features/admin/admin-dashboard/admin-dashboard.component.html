@@ -1,14 +1,63 @@
 <section class="admin-wrap">
   <header>
-    <div>
+    <div class="header-copy">
       <p class="eyebrow">CMS Portal</p>
       <h1>Golden Seal Admin</h1>
       <p>Manage pages, products, announcements, media, and design settings from one dashboard.</p>
     </div>
-    <button mat-stroked-button type="button" (click)="logout()">Logout</button>
+
+    <div class="header-actions">
+      <p class="save-status">{{ lastSavedLabel() }}</p>
+      <div class="header-buttons">
+        <button mat-flat-button color="primary" type="button" (click)="saveContentAndSettings()">Save All</button>
+        <button mat-stroked-button type="button" (click)="logout()">Logout</button>
+      </div>
+    </div>
   </header>
 
-  <mat-tab-group class="admin-tabs" dynamicHeight [animationDuration]="'180ms'" [disableRipple]="true">
+  <section class="quick-nav">
+    <button mat-stroked-button type="button" (click)="jumpToTab(0)">Content</button>
+    <button mat-stroked-button type="button" (click)="jumpToTab(1)">Products</button>
+    <button mat-stroked-button type="button" (click)="jumpToTab(2)">Media</button>
+    <button mat-stroked-button type="button" (click)="jumpToTab(3)">Theme</button>
+    <button mat-stroked-button type="button" (click)="jumpToTab(4)">Analytics</button>
+  </section>
+
+  <section class="kpi-grid" aria-label="Admin overview">
+    <article>
+      <p>Products</p>
+      <strong>{{ dashboardKpis().productCount }}</strong>
+    </article>
+    <article>
+      <p>Media Assets</p>
+      <strong>{{ dashboardKpis().mediaCount }}</strong>
+    </article>
+    <article>
+      <p>Homepage Sections</p>
+      <strong>{{ dashboardKpis().sectionCount }}</strong>
+    </article>
+    <article>
+      <p>Highlights</p>
+      <strong>{{ dashboardKpis().highlightCount }}</strong>
+    </article>
+    <article>
+      <p>Announcement Texts</p>
+      <strong>{{ dashboardKpis().announcementTextCount }}</strong>
+    </article>
+    <article>
+      <p>Announcement Images</p>
+      <strong>{{ dashboardKpis().announcementImageCount }}</strong>
+    </article>
+  </section>
+
+  <mat-tab-group
+    class="admin-tabs"
+    dynamicHeight
+    [animationDuration]="'180ms'"
+    [disableRipple]="true"
+    [selectedIndex]="activeTabIndex()"
+    (selectedIndexChange)="activeTabIndex.set($event)"
+  >
     <mat-tab label="Content">
       <section class="tab-grid">
         <mat-card>
@@ -345,8 +394,40 @@
             <h3>Existing Products</h3>
             <button mat-stroked-button type="button" (click)="prepareNewProduct()">+ New</button>
           </div>
+
+          <div class="filters-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Search products</mat-label>
+              <input
+                matInput
+                [ngModel]="productSearchQuery()"
+                (ngModelChange)="productSearchQuery.set($event)"
+                name="productSearchQuery"
+                placeholder="Name, description, or tag"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Category</mat-label>
+              <mat-select
+                [ngModel]="productCategoryFilter()"
+                (ngModelChange)="productCategoryFilter.set($event)"
+                name="productCategoryFilter"
+              >
+                <mat-option value="all">All categories</mat-option>
+                @for (category of categories; track category) {
+                  <mat-option [value]="category">{{ category }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-button type="button" (click)="resetProductFilters()">Clear</button>
+          </div>
+
+          <p class="helper-text">Showing {{ filteredProducts().length }} product(s)</p>
+
           <div class="product-list">
-            @for (product of products(); track product.id) {
+            @for (product of filteredProducts(); track product.id) {
               <article>
                 <div>
                   <h4>{{ product.name }}</h4>
@@ -357,6 +438,10 @@
                   <button mat-button type="button" (click)="deleteProduct(product.id)">Delete</button>
                 </div>
               </article>
+            }
+
+            @if (filteredProducts().length === 0) {
+              <p class="empty-state">No products match your current filters.</p>
             }
           </div>
         </mat-card>
@@ -456,8 +541,26 @@
 
         <mat-card class="full-width">
           <h3>Media Library</h3>
+
+          <div class="filters-row media-filter-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Search media</mat-label>
+              <input
+                matInput
+                [ngModel]="mediaSearchQuery()"
+                (ngModelChange)="mediaSearchQuery.set($event)"
+                name="mediaSearchQuery"
+                placeholder="File name, hash, or URL"
+              />
+            </mat-form-field>
+
+            <button mat-button type="button" (click)="resetMediaFilters()">Clear</button>
+          </div>
+
+          <p class="helper-text">Showing {{ filteredMedia().length }} media item(s)</p>
+
           <div class="media-grid">
-            @for (item of media(); track item.id) {
+            @for (item of filteredMedia(); track item.id) {
               <article>
                 <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
                 <div>
@@ -477,6 +580,10 @@
                   </button>
                 </div>
               </article>
+            }
+
+            @if (filteredMedia().length === 0) {
+              <p class="empty-state">No media items match your current search.</p>
             }
           </div>
         </mat-card>

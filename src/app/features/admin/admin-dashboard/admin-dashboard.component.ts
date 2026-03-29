@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -35,6 +35,8 @@ type SeparatorOption = {
   label: string;
 };
 
+type ProductFilterCategory = ProductCategory | 'all';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -62,6 +64,7 @@ export class AdminDashboardComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
 
+  readonly publishedContent = this.siteContent.content;
   readonly products = this.siteContent.products;
   readonly media = this.siteContent.media;
   readonly fallbackLogoUrl = DEFAULT_SETTINGS.logoUrl;
@@ -105,6 +108,73 @@ export class AdminDashboardComponent {
   logoUploadProgressText = '';
   deletingMediaIdSet = new Set<string>();
 
+  readonly activeTabIndex = signal(0);
+  readonly lastSavedAtSignal = signal<number | null>(null);
+  readonly productSearchQuery = signal('');
+  readonly productCategoryFilter = signal<ProductFilterCategory>('all');
+  readonly mediaSearchQuery = signal('');
+
+  readonly dashboardKpis = computed(() => {
+    const content = this.publishedContent();
+    const products = this.products();
+    const media = this.media();
+
+    return {
+      productCount: products.length,
+      mediaCount: media.length,
+      sectionCount: content.sections.length,
+      highlightCount: content.highlights.length,
+      announcementTextCount: content.announcement.textItems.length,
+      announcementImageCount: content.announcement.imageItems.length
+    };
+  });
+
+  readonly filteredProducts = computed(() => {
+    const query = this.productSearchQuery().trim().toLowerCase();
+    const selectedCategory = this.productCategoryFilter();
+
+    return this.products().filter((product) => {
+      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      if (!matchesCategory) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      return (
+        product.name.toLowerCase().includes(query) ||
+        product.shortDescription.toLowerCase().includes(query) ||
+        product.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    });
+  });
+
+  readonly filteredMedia = computed(() => {
+    const query = this.mediaSearchQuery().trim().toLowerCase();
+    if (!query) {
+      return this.media();
+    }
+
+    return this.media().filter((item) => {
+      return (
+        item.name.toLowerCase().includes(query) ||
+        item.hash.toLowerCase().includes(query) ||
+        item.downloadUrl.toLowerCase().includes(query)
+      );
+    });
+  });
+
+  readonly lastSavedLabel = computed(() => {
+    const timestamp = this.lastSavedAtSignal();
+    if (!timestamp) {
+      return 'Not saved in this session yet';
+    }
+
+    return `Last saved at ${new Date(timestamp).toLocaleTimeString()}`;
+  });
+
   readonly sectionOptions = computed(() => this.contentDraft.sections);
 
   constructor() {
@@ -126,6 +196,7 @@ export class AdminDashboardComponent {
       this.prepareSettingsDraftForSave();
       await this.siteContent.saveHomeContent(this.contentDraft);
       await this.siteContent.saveSettings(this.settingsDraft);
+      this.markSaved();
       this.notify('Content and settings saved to Firestore.');
     } catch (error) {
       this.handleError('Unable to save content and settings.', error);
@@ -136,6 +207,7 @@ export class AdminDashboardComponent {
     try {
       this.prepareContentDraftForSave();
       await this.siteContent.saveHomeContent(this.contentDraft);
+      this.markSaved();
       this.notify('Homepage content saved.');
     } catch (error) {
       this.handleError('Unable to save homepage content.', error);
@@ -145,6 +217,7 @@ export class AdminDashboardComponent {
   async saveTheme(): Promise<void> {
     try {
       await this.siteContent.saveTheme(this.themeDraft);
+      this.markSaved();
       this.notify('Theme updated.');
     } catch (error) {
       this.handleError('Unable to save theme changes.', error);
@@ -363,6 +436,7 @@ export class AdminDashboardComponent {
 
       this.syncSectionProductIds(productId, sectionId);
       await this.siteContent.saveHomeContent(this.contentDraft);
+      this.markSaved();
 
       this.notify('Product saved.');
       this.prepareNewProduct();
@@ -374,6 +448,7 @@ export class AdminDashboardComponent {
   async deleteProduct(productId: string): Promise<void> {
     try {
       await this.siteContent.deleteProduct(productId);
+      this.markSaved();
       this.notify('Product deleted.');
 
       if (this.selectedProductId === productId) {
@@ -495,6 +570,7 @@ export class AdminDashboardComponent {
     try {
       await this.mediaService.deleteImage(item);
       this.removeDeletedMediaFromDrafts(item.downloadUrl);
+      this.markSaved();
 
       if (item.storagePath.startsWith('cloudinary:')) {
         this.notify('Media deleted from Cloudinary and media library.');
@@ -511,6 +587,19 @@ export class AdminDashboardComponent {
   async logout(): Promise<void> {
     await this.auth.logout();
     await this.router.navigateByUrl('/');
+  }
+
+  jumpToTab(index: number): void {
+    this.activeTabIndex.set(index);
+  }
+
+  resetProductFilters(): void {
+    this.productSearchQuery.set('');
+    this.productCategoryFilter.set('all');
+  }
+
+  resetMediaFilters(): void {
+    this.mediaSearchQuery.set('');
   }
 
   private syncSectionProductIds(productId: string, nextSectionId: string): void {
@@ -661,6 +750,10 @@ export class AdminDashboardComponent {
     };
   }
 
+  private markSaved(): void {
+    this.lastSavedAtSignal.set(Date.now());
+  }
+
   private notify(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 2800
@@ -669,6 +762,7 @@ export class AdminDashboardComponent {
 
   private handleError(contextMessage: string, error: unknown): void {
     console.error(contextMessage, error);
-    this.notify(contextMessage);
+    const details = error instanceof Error ? error.message.trim() : '';
+    this.notify(details ? `${contextMessage} ${details}` : contextMessage);
   }
 }
