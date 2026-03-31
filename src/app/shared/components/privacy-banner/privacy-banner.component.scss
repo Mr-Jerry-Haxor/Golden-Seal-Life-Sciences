@@ -19,6 +19,17 @@
   line-height: 1.5;
 }
 
+.privacy-banner a {
+  color: var(--brand-primary, #0a2540);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:host-context(.dark) .privacy-banner a {
+  color: #93c5fd;
+}
+
 .privacy-actions {
   display: flex;
   gap: 0.75rem;

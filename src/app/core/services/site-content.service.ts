@@ -187,15 +187,16 @@ export class SiteContentService {
   }
 
   async saveMediaItem(item: MediaItem): Promise<void> {
+    const normalizedItem = this.normalizeMediaItem(item);
     const db = this.firebase.firestore;
     if (!db) {
       this.patchSnapshot({
-        media: [item, ...this.snapshotSignal().media]
+        media: [normalizedItem, ...this.snapshotSignal().media]
       });
       return;
     }
 
-    await setDoc(doc(db, 'media', item.id), item, { merge: true });
+    await setDoc(doc(db, 'media', normalizedItem.id), normalizedItem, { merge: true });
   }
 
   async deleteMediaItem(itemId: string): Promise<void> {
@@ -427,6 +428,26 @@ export class SiteContentService {
       ...snapshot,
       ...patch
     }));
+  }
+
+  private normalizeMediaItem(item: MediaItem): MediaItem {
+    const normalizedName = item.name?.trim() || 'Untitled media';
+    const normalizedHash = item.hash?.trim() || crypto.randomUUID();
+    const normalizedStoragePath = item.storagePath?.trim() || `media:${normalizedHash}`;
+    const normalizedDownloadUrl = item.downloadUrl?.trim() || '';
+    const normalizedPublicId = item.cloudinaryPublicId?.trim();
+    const normalizedDeleteToken = item.cloudinaryDeleteToken?.trim();
+
+    return {
+      id: item.id,
+      name: normalizedName,
+      hash: normalizedHash,
+      storagePath: normalizedStoragePath,
+      downloadUrl: normalizedDownloadUrl,
+      ...(normalizedPublicId ? { cloudinaryPublicId: normalizedPublicId } : {}),
+      ...(normalizedDeleteToken ? { cloudinaryDeleteToken: normalizedDeleteToken } : {}),
+      createdAt: item.createdAt || Date.now()
+    };
   }
 
   private normalizeHomeContent(rawContent: Partial<HomeContent> | HomeContent): HomeContent {

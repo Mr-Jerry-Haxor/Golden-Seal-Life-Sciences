@@ -2,17 +2,20 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { getBrandLogoUrl, getBrandLogoWithBackgroundUrl } from '../../core/config/brand-assets.config';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { SiteContentService } from '../../core/services/site-content.service';
 import { UiPreferencesService } from '../../core/services/ui-preferences.service';
+import { LeadIntentModalComponent } from '../../shared/components/lead-intent-modal/lead-intent-modal.component';
 
 @Component({
   selector: 'app-public-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LeadIntentModalComponent],
   templateUrl: './public-shell.component.html',
   styleUrl: './public-shell.component.scss'
 })
 export class PublicShellComponent {
+  private readonly analytics = inject(AnalyticsService);
   private readonly siteContent = inject(SiteContentService);
   private readonly uiPreferences = inject(UiPreferencesService);
   private readonly fallbackLogoUrl = getBrandLogoWithBackgroundUrl('headerBadge');
@@ -39,6 +42,13 @@ export class PublicShellComponent {
 
   toggleDarkMode(): void {
     this.uiPreferences.toggleDarkMode();
+    void this.analytics.trackEvent('theme_toggled', window.location.pathname, {
+      darkModeEnabled: this.uiPreferences.darkMode()
+    });
+  }
+
+  trackCtaClick(name: string, placement: string): void {
+    void this.analytics.trackCtaClick(name, placement);
   }
 
   useFallbackLogo(event: Event): void {

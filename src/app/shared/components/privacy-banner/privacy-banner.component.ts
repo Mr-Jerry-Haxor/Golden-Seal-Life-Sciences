@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-privacy-banner',
   standalone: true,
-  imports: [CommonModule, MatButtonModule],
+  imports: [CommonModule, MatButtonModule, RouterLink],
   templateUrl: './privacy-banner.component.html',
   styleUrl: './privacy-banner.component.scss'
 })

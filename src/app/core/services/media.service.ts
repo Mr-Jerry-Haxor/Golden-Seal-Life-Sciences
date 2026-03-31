@@ -45,7 +45,9 @@ export class MediaService {
       storagePath: `cloudinary:${cloudinaryUpload.publicId}`,
       downloadUrl: cloudinaryUpload.secureUrl,
       cloudinaryPublicId: cloudinaryUpload.publicId,
-      cloudinaryDeleteToken: cloudinaryUpload.deleteToken,
+      ...(cloudinaryUpload.deleteToken?.trim()
+        ? { cloudinaryDeleteToken: cloudinaryUpload.deleteToken.trim() }
+        : {}),
       createdAt: Date.now()
     };
 
@@ -54,11 +56,20 @@ export class MediaService {
   }
 
   async deleteImage(item: MediaItem): Promise<void> {
-    if (item.storagePath.startsWith('cloudinary:') && isCloudinaryConfigured(cloudinaryConfig)) {
-      await this.deleteFromCloudinary(item);
+    await this.siteContent.deleteMediaItem(item.id);
+
+    if (!item.storagePath.startsWith('cloudinary:') || !isCloudinaryConfigured(cloudinaryConfig)) {
+      return;
     }
 
-    await this.siteContent.deleteMediaItem(item.id);
+    try {
+      await this.deleteFromCloudinary(item);
+    } catch (error) {
+      console.warn(
+        'Cloudinary cleanup failed after Firebase media removal. The media remains hidden from the website.',
+        error
+      );
+    }
   }
 
   private async uploadToCloudinary(file: Blob, hash: string): Promise<CloudinaryUploadResult> {
@@ -75,7 +86,6 @@ export class MediaService {
     formData.append('upload_preset', cloudinaryConfig.uploadPreset);
     formData.append('folder', cloudinaryConfig.folder);
     formData.append('public_id', hash); // Use SHA-256 hash as public ID for deduplication
-    formData.append('return_delete_token', '1');
 
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
 
@@ -151,7 +161,7 @@ export class MediaService {
 
     if (!isCloudinaryDeleteConfigured(cloudinaryConfig)) {
       throw new Error(
-        'Cloudinary delete credentials are missing. Add cloudinaryConfig.apiKey/apiSecret or delete soon after upload while delete token is available.'
+        'Cloudinary delete credentials are missing. Add cloudinaryConfig.apiKey/apiSecret for signed delete operations.'
       );
     }
 

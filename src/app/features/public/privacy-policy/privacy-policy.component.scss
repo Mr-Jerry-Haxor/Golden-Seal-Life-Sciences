@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--brand-primary, #0a2540) 75%, #1e293b 25%);
+}
+
+.policy-card {
+  border-radius: 1.25rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: 0 12px 35px rgb(15 23 42 / 0.08);
+  padding: 1.4rem;
+}
+
+.policy-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.policy-card p,
+.policy-card li {
+  margin-top: 0.75rem;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.policy-card ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.policy-card a {
+  color: var(--brand-primary, #0a2540);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:host-context(.dark) .policy-card,
+:host-context(.dark) header {
+  border-color: rgb(71 85 105 / 0.7);
+  background: rgb(15 23 42 / 0.85);
+}
+
+:host-context(.dark) h1,
+:host-context(.dark) .policy-card h2 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) p,
+:host-context(.dark) li {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .policy-card a {
+  color: #93c5fd;
+}

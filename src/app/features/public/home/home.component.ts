@@ -3,7 +3,9 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, computed, effect, inje
 import { RouterLink } from '@angular/router';
 import { getBrandLogoWithBackgroundUrl } from '../../../core/config/brand-assets.config';
 import { ProductCategory } from '../../../core/models/site.models';
+import { AnalyticsService } from '../../../core/services/analytics.service';
 import { SiteContentService } from '../../../core/services/site-content.service';
+import { LeadCaptureFormComponent } from '../../../shared/components/lead-capture-form/lead-capture-form.component';
 
 type ServiceCard = {
   iconPath: string;
@@ -34,14 +36,21 @@ type ProjectCard = {
   route: string;
 };
 
+type TestimonialCard = {
+  quote: string;
+  name: string;
+  role: string;
+};
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LeadCaptureFormComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
+  private readonly analytics = inject(AnalyticsService);
   private readonly siteContent = inject(SiteContentService);
   private readonly hostElement = inject(ElementRef<HTMLElement>);
   private revealObserver: IntersectionObserver | null = null;
@@ -204,6 +213,27 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { label: 'Support Coverage', value: '24/7' }
   ];
 
+  readonly testimonials: TestimonialCard[] = [
+    {
+      quote:
+        'Golden Seal translated our trial data into an actionable rollout. We saw stronger batch consistency within a single cycle.',
+      name: 'Operations Director',
+      role: 'Aquaculture Program'
+    },
+    {
+      quote:
+        'Their micronutrient strategy helped stabilize field variability and improved nutrient uptake metrics across multiple sites.',
+      name: 'Technical Agronomy Lead',
+      role: 'Agri Nutrition Partner'
+    },
+    {
+      quote:
+        'The process controls and documentation discipline gave us the confidence to scale fine chemical output with lower deviation.',
+      name: 'Plant Quality Manager',
+      role: 'Fine Chemicals Division'
+    }
+  ];
+
   constructor() {
     effect(() => {
       if (this.isLoading()) {
@@ -226,6 +256,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       window.cancelAnimationFrame(this.revealAnimationFrameId);
       this.revealAnimationFrameId = null;
     }
+  }
+
+  trackCta(ctaName: string, placement: string): void {
+    void this.analytics.trackCtaClick(ctaName, placement);
   }
 
   private scheduleRevealSetup(): void {

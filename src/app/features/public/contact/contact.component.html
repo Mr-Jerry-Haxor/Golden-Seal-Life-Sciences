@@ -19,59 +19,22 @@
     <ul>
       <li>
         Email:
-        <a [href]="contactEmailHref()">{{ settings().contactEmail }}</a>
+        <a [href]="contactEmailHref()" (click)="trackContactAction('contact_email_click')">{{ settings().contactEmail }}</a>
       </li>
       <li>
         Phone:
-        <a [href]="contactPhoneHref()">{{ settings().contactPhone }}</a>
+        <a [href]="contactPhoneHref()" (click)="trackContactAction('contact_phone_click')">{{ settings().contactPhone }}</a>
       </li>
-      <li>WhatsApp: {{ settings().whatsappNumber }}</li>
+      <li>
+        WhatsApp:
+        <a [href]="whatsappHref()" target="_blank" rel="noreferrer" (click)="trackContactAction('contact_whatsapp_click')">
+          {{ settings().whatsappNumber }}
+        </a>
+      </li>
       <li>Address: {{ settings().address }}</li>
     </ul>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="contact-form">
-    <mat-form-field appearance="outline">
-      <mat-label>Name</mat-label>
-      <input matInput formControlName="name" />
-      @if (form.controls.name.invalid && form.controls.name.touched) {
-        <mat-error>Name is required.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" formControlName="email" />
-      @if (form.controls.email.invalid && form.controls.email.touched) {
-        <mat-error>Enter a valid email.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Phone</mat-label>
-      <input matInput formControlName="phone" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Company</mat-label>
-      <input matInput formControlName="company" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Message</mat-label>
-      <textarea matInput rows="5" formControlName="message"></textarea>
-      @if (form.controls.message.invalid && form.controls.message.touched) {
-        <mat-error>Message is required.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-checkbox formControlName="consent">
-      I consent to storing my submitted details for follow-up communication.
-    </mat-checkbox>
-
-    <button mat-flat-button color="primary" type="submit" [disabled]="submitting">
-      {{ submitting ? 'Submitting...' : 'Submit Inquiry' }}
-    </button>
-  </form>
+  <app-lead-capture-form sourceContext="contact_page" submitLabel="Submit Inquiry"></app-lead-capture-form>
 </section>
 }

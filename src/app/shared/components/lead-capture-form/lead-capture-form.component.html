@@ -1,0 +1,43 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="lead-form" [class.compact]="compact">
+  <mat-form-field appearance="outline">
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name" (focus)="markInteraction()" />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <mat-error>Name is required.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Email</mat-label>
+    <input matInput type="email" formControlName="email" (focus)="markInteraction()" />
+    @if (form.controls.email.invalid && form.controls.email.touched) {
+      <mat-error>Enter a valid email.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Phone</mat-label>
+    <input matInput formControlName="phone" (focus)="markInteraction()" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Company</mat-label>
+    <input matInput formControlName="company" (focus)="markInteraction()" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Message</mat-label>
+    <textarea matInput rows="5" formControlName="message" (focus)="markInteraction()"></textarea>
+    @if (form.controls.message.invalid && form.controls.message.touched) {
+      <mat-error>Message is required.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-checkbox formControlName="consent" class="full-width" (change)="markInteraction()">
+    I consent to storing my submitted details for follow-up communication.
+  </mat-checkbox>
+
+  <button mat-flat-button color="primary" type="submit" class="full-width" [disabled]="submitting">
+    {{ submitting ? 'Submitting...' : submitLabel }}
+  </button>
+</form>

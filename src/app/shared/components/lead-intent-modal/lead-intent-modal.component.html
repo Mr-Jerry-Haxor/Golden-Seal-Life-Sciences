@@ -1,0 +1,26 @@
+@if (visible()) {
+  <div class="lead-intent-overlay" role="dialog" aria-modal="true" aria-label="Get consultation">
+    <article class="lead-intent-card">
+      <button
+        type="button"
+        class="lead-intent-close"
+        (click)="dismiss()"
+        aria-label="Close consultation popup"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+
+      <p class="lead-intent-eyebrow">Consultation Invite</p>
+      <h2>Need Help Choosing the Right Biotech Program?</h2>
+      <p>
+        Talk directly with our technical team and get a practical action plan for your aquaculture, agriculture,
+        or fine chemical goals.
+      </p>
+
+      <div class="lead-intent-actions">
+        <a routerLink="/contact" (click)="onCtaClick()" class="lead-intent-primary">Get Consultation</a>
+        <button type="button" class="lead-intent-secondary" (click)="dismiss('not_now')">Not now</button>
+      </div>
+    </article>
+  </div>
+}

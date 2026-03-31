@@ -4,12 +4,15 @@
   gap: 1.4rem;
 }
 
-.contact-wrap > div,
-.contact-form {
+.contact-wrap > div {
   border-radius: 1.3rem;
   background: color-mix(in srgb, var(--surface, #fff) 94%, var(--brand-secondary, #6dbb7a) 6%);
   border: 1px solid color-mix(in srgb, var(--brand-primary, #1a7a50) 20%, transparent 80%);
   padding: 1.2rem;
+}
+
+.contact-wrap > app-lead-capture-form {
+  display: block;
 }
 
 .eyebrow {
@@ -47,31 +50,13 @@ ul {
   gap: 0.35rem;
 }
 
-.contact-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
-  align-content: start;
-}
-
-.full-width,
-mat-checkbox,
-button {
-  grid-column: 1 / -1;
-}
-
 @media (max-width: 900px) {
   .contact-wrap {
     grid-template-columns: 1fr;
   }
-
-  .contact-form {
-    grid-template-columns: 1fr;
-  }
 }
 
-:host-context(.dark) .contact-wrap > div,
-:host-context(.dark) .contact-form {
+:host-context(.dark) .contact-wrap > div {
   background: rgb(15 23 42 / 0.86);
   border-color: rgb(71 85 105 / 0.75);
 }
@@ -92,12 +77,4 @@ button {
 
 :host-context(.dark) h1 {
   color: #f8fafc;
-}
-
-:host-context(.dark) ::ng-deep .mat-mdc-checkbox .mdc-label {
-  color: #e2e8f0;
-}
-
-:host-context(.dark) ::ng-deep .mat-mdc-form-field .mdc-text-field {
-  background-color: rgb(2 6 23 / 0.42);
 }

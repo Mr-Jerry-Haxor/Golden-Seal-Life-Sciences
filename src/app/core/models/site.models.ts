@@ -106,6 +106,7 @@ export interface AnalyticsEvent {
   timezone: string;
   language: string;
   cookieKeys: string[];
+  metadata?: Record<string, unknown>;
   createdAt: number;
 }
 
@@ -145,15 +146,15 @@ export interface SiteSnapshot {
 }
 
 export const DEFAULT_THEME: SiteTheme = {
-  brandPrimary: '#1A7A50',
-  brandSecondary: '#6DBB7A',
-  accent: '#E9B44C',
-  backgroundStart: '#f5fbf7',
-  backgroundEnd: '#e7f4eb',
+  brandPrimary: '#0A2540',
+  brandSecondary: '#2ECC71',
+  accent: '#6ee7a2',
+  backgroundStart: '#F8FAFC',
+  backgroundEnd: '#FFFFFF',
   surface: '#ffffff',
-  textPrimary: '#122117',
-  textMuted: '#4a5d50',
-  pointerColor: '#e9b44c'
+  textPrimary: '#1E293B',
+  textMuted: '#64748b',
+  pointerColor: '#2ECC71'
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {

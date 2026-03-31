@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
+import { SeoService } from './core/services/seo.service';
 import { AmbientBackgroundComponent } from './shared/components/ambient-background/ambient-background.component';
 import { CustomCursorComponent } from './shared/components/custom-cursor/custom-cursor.component';
 import { PrivacyBannerComponent } from './shared/components/privacy-banner/privacy-banner.component';
@@ -22,8 +23,10 @@ import { ToastOutletComponent } from './shared/components/toast-outlet/toast-out
 })
 export class App {
   private readonly themeService = inject(ThemeService);
+  private readonly seoService = inject(SeoService);
 
   constructor() {
     void this.themeService;
+    void this.seoService;
   }
 }
