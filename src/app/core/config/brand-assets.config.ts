@@ -1,4 +1,5 @@
 const CLOUDINARY_UPLOAD_MARKER = '/upload/';
+const CLOUDINARY_HOST = 'res.cloudinary.com';
 
 export const GOLDEN_SEAL_LOGO_URL =
   'https://res.cloudinary.com/dvqdwq4wa/image/upload/v1774961077/im3sff6vtb9revpoiil5.png';
@@ -16,6 +17,24 @@ export const BRAND_LOGO_TRANSFORMS = {
 } as const;
 
 type BrandLogoVariant = keyof typeof BRAND_LOGO_TRANSFORMS;
+
+function isCloudinaryImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith(CLOUDINARY_HOST) && parsed.pathname.includes('/image/upload/');
+  } catch {
+    return false;
+  }
+}
+
+function resolveBrandSourceUrl(sourceUrl: string | null | undefined): string {
+  const normalizedSource = sourceUrl?.trim() || '';
+  if (!normalizedSource) {
+    return GOLDEN_SEAL_LOGO_URL;
+  }
+
+  return isCloudinaryImageUrl(normalizedSource) ? normalizedSource : GOLDEN_SEAL_LOGO_URL;
+}
 
 export function withCloudinaryTransform(url: string, transformation: string): string {
   if (!url || !transformation) {
@@ -45,7 +64,7 @@ export function withCloudinaryTransform(url: string, transformation: string): st
 }
 
 export function getBrandLogoUrl(sourceUrl: string | null | undefined, variant: BrandLogoVariant): string {
-  const baseUrl = sourceUrl?.trim() || GOLDEN_SEAL_LOGO_URL;
+  const baseUrl = resolveBrandSourceUrl(sourceUrl);
   return withCloudinaryTransform(baseUrl, BRAND_LOGO_TRANSFORMS[variant]);
 }
 

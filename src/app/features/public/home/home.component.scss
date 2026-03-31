@@ -1,3 +1,41 @@
 :host {
   display: block;
 }
+
+:host-context(.dark) .reveal-item .text-slate-900 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .reveal-item .text-slate-700,
+:host-context(.dark) .reveal-item .text-slate-600 {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .reveal-item .text-slate-500 {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .reveal-item .bg-white,
+:host-context(.dark) .reveal-item .bg-white\/80,
+:host-context(.dark) .reveal-item .bg-white\/90 {
+  background-color: rgb(15 23 42 / 0.86);
+}
+
+:host-context(.dark) .reveal-item .bg-slate-50,
+:host-context(.dark) .reveal-item .bg-slate-50\/70,
+:host-context(.dark) .reveal-item .bg-slate-50\/80,
+:host-context(.dark) .reveal-item .bg-slate-100 {
+  background-color: rgb(15 23 42 / 0.72);
+}
+
+:host-context(.dark) .reveal-item .border-slate-200,
+:host-context(.dark) .reveal-item .border-slate-200\/70,
+:host-context(.dark) .reveal-item .border-slate-200\/75,
+:host-context(.dark) .reveal-item .border-slate-200\/80,
+:host-context(.dark) .reveal-item .border-slate-200\/90 {
+  border-color: rgb(71 85 105 / 0.78);
+}
+
+:host-context(.dark) #about > div {
+  background: linear-gradient(140deg, rgb(2 6 23 / 0.95), rgb(15 23 42 / 0.88));
+}

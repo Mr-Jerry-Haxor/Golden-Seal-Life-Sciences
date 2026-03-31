@@ -1,5 +1,5 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, OnDestroy, computed, effect, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { getBrandLogoWithBackgroundUrl } from '../../../core/config/brand-assets.config';
 import { ProductCategory } from '../../../core/models/site.models';
@@ -43,8 +43,9 @@ type ProjectCard = {
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly siteContent = inject(SiteContentService);
-  private readonly document = inject(DOCUMENT);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
   private revealObserver: IntersectionObserver | null = null;
+  private revealAnimationFrameId: number | null = null;
 
   readonly content = this.siteContent.content;
   readonly products = this.siteContent.products;
@@ -203,11 +204,53 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { label: 'Support Coverage', value: '24/7' }
   ];
 
+  constructor() {
+    effect(() => {
+      if (this.isLoading()) {
+        return;
+      }
+
+      this.scheduleRevealSetup();
+    });
+  }
+
   ngAfterViewInit(): void {
-    const revealNodes = this.document.querySelectorAll('.reveal-item');
+    this.scheduleRevealSetup();
+  }
+
+  ngOnDestroy(): void {
+    this.revealObserver?.disconnect();
+    this.revealObserver = null;
+
+    if (this.revealAnimationFrameId !== null) {
+      window.cancelAnimationFrame(this.revealAnimationFrameId);
+      this.revealAnimationFrameId = null;
+    }
+  }
+
+  private scheduleRevealSetup(): void {
+    if (typeof window === 'undefined' || this.isLoading()) {
+      return;
+    }
+
+    if (this.revealAnimationFrameId !== null) {
+      window.cancelAnimationFrame(this.revealAnimationFrameId);
+    }
+
+    this.revealAnimationFrameId = window.requestAnimationFrame(() => {
+      this.revealAnimationFrameId = null;
+      this.setupRevealObserver();
+    });
+  }
+
+  private setupRevealObserver(): void {
+    const revealNodes = Array.from(this.hostElement.nativeElement.querySelectorAll('.reveal-item')) as HTMLElement[];
     if (revealNodes.length === 0) {
       return;
     }
+
+    this.revealObserver?.disconnect();
+    this.revealObserver = null;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
@@ -238,12 +281,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     );
 
     revealNodes.forEach((node) => {
-      this.revealObserver?.observe(node);
+      if (!node.classList.contains('opacity-100')) {
+        this.revealObserver?.observe(node);
+      }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.revealObserver?.disconnect();
-    this.revealObserver = null;
   }
 }

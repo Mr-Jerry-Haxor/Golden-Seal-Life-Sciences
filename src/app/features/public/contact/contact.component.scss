@@ -59,3 +59,27 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+:host-context(.dark) .contact-wrap > div,
+:host-context(.dark) .contact-form {
+  background: rgb(15 23 42 / 0.86);
+  border-color: rgb(71 85 105 / 0.75);
+}
+
+:host-context(.dark) .eyebrow,
+:host-context(.dark) p,
+:host-context(.dark) li {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) h1 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) ::ng-deep .mat-mdc-checkbox .mdc-label {
+  color: #e2e8f0;
+}
+
+:host-context(.dark) ::ng-deep .mat-mdc-form-field .mdc-text-field {
+  background-color: rgb(2 6 23 / 0.42);
+}

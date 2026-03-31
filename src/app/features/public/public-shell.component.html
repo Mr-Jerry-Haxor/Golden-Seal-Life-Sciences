@@ -2,7 +2,7 @@
   <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
     <a class="flex min-w-0 items-center gap-3" routerLink="/" (click)="closeMobileNav()" aria-label="Golden Seal Life Sciences home">
       <img
-        class="h-11 w-11 rounded-xl border border-slate-200 object-cover shadow-md shadow-slate-200/70"
+        class="h-11 w-11 rounded-xl border border-slate-200 bg-white/95 object-contain p-1 shadow-md shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900"
         [src]="brandLogoUrl()"
         [alt]="settings().companyName + ' logo'"
         (error)="useFallbackLogo($event)"
@@ -56,11 +56,21 @@
 
       <button
         type="button"
-        class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         (click)="toggleDarkMode()"
         [attr.aria-pressed]="isDarkMode()"
+        [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
       >
-        {{ isDarkMode() ? 'Light Mode' : 'Dark Mode' }}
+        @if (isDarkMode()) {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round"></path>
+          </svg>
+        } @else {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>
+          </svg>
+        }
       </button>
 
       <a
@@ -110,10 +120,20 @@
 
       <button
         type="button"
-        class="rounded-lg border border-slate-300 px-3 py-2 text-left text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         (click)="toggleDarkMode()"
+        [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
       >
-        {{ isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+        @if (isDarkMode()) {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round"></path>
+          </svg>
+        } @else {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>
+          </svg>
+        }
       </button>
 
       <a

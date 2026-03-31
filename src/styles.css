@@ -59,3 +59,16 @@ h6 {
   background: color-mix(in srgb, var(--brand-secondary) 35%, #ffffff 65%);
   color: var(--text-primary);
 }
+
+@media (pointer: fine) {
+  body.custom-cursor-active,
+  body.custom-cursor-active * {
+    cursor: none !important;
+  }
+
+  body.custom-cursor-active input,
+  body.custom-cursor-active textarea,
+  body.custom-cursor-active [contenteditable='true'] {
+    cursor: text !important;
+  }
+}

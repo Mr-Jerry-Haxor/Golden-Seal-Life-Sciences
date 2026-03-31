@@ -120,6 +120,15 @@ export interface LeadCapture {
   createdAt: number;
 }
 
+export type LeadStatus = 'new' | 'in-progress' | 'closed';
+
+export interface LeadRecord extends LeadCapture {
+  id: string;
+  status: LeadStatus;
+  updatedAt: number;
+  adminNotes?: string;
+}
+
 export interface HomeContent {
   hero: HeroContent;
   sections: HomeSection[];

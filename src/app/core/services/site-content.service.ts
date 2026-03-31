@@ -16,6 +16,8 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_THEME,
   HomeContent,
+  LeadRecord,
+  LeadStatus,
   MediaItem,
   Product,
   SiteSettings,
@@ -49,6 +51,8 @@ export class SiteContentService {
   readonly theme = computed(() => this.snapshotSignal().theme);
   readonly settings = computed(() => this.snapshotSignal().settings);
   readonly media = computed(() => this.snapshotSignal().media);
+  private readonly leadsSignal = signal<LeadRecord[]>([]);
+  readonly leads = this.leadsSignal.asReadonly();
   readonly isLoading = this.loadingSignal.asReadonly();
   readonly highlightedProducts = computed(() => this.products().filter((product) => product.highlighted));
 
@@ -241,12 +245,71 @@ export class SiteContentService {
   }
 
   async createLead(payload: Record<string, unknown>): Promise<void> {
+    const createdAt =
+      typeof payload['createdAt'] === 'number' ? (payload['createdAt'] as number) : Date.now();
+    const normalizedLead: Record<string, unknown> & {
+      createdAt: number;
+      updatedAt: number;
+      status: LeadStatus;
+      adminNotes: string;
+    } = {
+      ...payload,
+      createdAt,
+      updatedAt: typeof payload['updatedAt'] === 'number' ? (payload['updatedAt'] as number) : createdAt,
+      status: (payload['status'] as LeadStatus | undefined) || 'new',
+      adminNotes: (payload['adminNotes'] as string | undefined) || ''
+    };
+
     const db = this.firebase.firestore;
     if (!db) {
+      const leadId = crypto.randomUUID();
+      this.leadsSignal.update((leads) => [
+        {
+          id: leadId,
+          name: (normalizedLead['name'] as string) || '',
+          email: (normalizedLead['email'] as string) || '',
+          phone: (normalizedLead['phone'] as string) || '',
+          company: (normalizedLead['company'] as string) || '',
+          message: (normalizedLead['message'] as string) || '',
+          sourcePath: (normalizedLead['sourcePath'] as string) || '',
+          consent: Boolean(normalizedLead['consent']),
+          createdAt,
+          updatedAt: normalizedLead.updatedAt,
+          status: normalizedLead.status,
+          adminNotes: normalizedLead.adminNotes
+        },
+        ...leads
+      ]);
       return;
     }
 
-    await addDoc(collection(db, 'leads'), payload);
+    await addDoc(collection(db, 'leads'), normalizedLead);
+  }
+
+  async updateLeadStatus(leadId: string, status: LeadStatus, adminNotes = ''): Promise<void> {
+    const updatedAt = Date.now();
+    const db = this.firebase.firestore;
+    if (!db) {
+      this.leadsSignal.update((leads) =>
+        leads.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                status,
+                adminNotes,
+                updatedAt
+              }
+            : lead
+        )
+      );
+      return;
+    }
+
+    await updateDoc(doc(db, 'leads', leadId), {
+      status,
+      adminNotes,
+      updatedAt
+    });
   }
 
   private startRealtimeSync(): void {
@@ -312,6 +375,34 @@ export class SiteContentService {
         const sorted = mediaItems.sort((a, b) => b.createdAt - a.createdAt);
         this.patchSnapshot({ media: sorted });
         this.markBootstrapReady('media');
+      })
+    );
+
+    this.unsubscribers.push(
+      onSnapshot(collection(db, 'leads'), (snapshot) => {
+        const leads = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as Partial<LeadRecord>;
+          const createdAt = typeof data.createdAt === 'number' ? data.createdAt : Date.now();
+          const updatedAt = typeof data.updatedAt === 'number' ? data.updatedAt : createdAt;
+
+          return {
+            id: docSnap.id,
+            name: data.name?.trim() || 'Unknown',
+            email: data.email?.trim() || '',
+            phone: data.phone?.trim() || '',
+            company: data.company?.trim() || '',
+            message: data.message?.trim() || '',
+            sourcePath: data.sourcePath?.trim() || '/',
+            consent: Boolean(data.consent),
+            createdAt,
+            updatedAt,
+            status: data.status || 'new',
+            adminNotes: data.adminNotes?.trim() || ''
+          } as LeadRecord;
+        });
+
+        leads.sort((a, b) => b.updatedAt - a.updatedAt);
+        this.leadsSignal.set(leads);
       })
     );
   }

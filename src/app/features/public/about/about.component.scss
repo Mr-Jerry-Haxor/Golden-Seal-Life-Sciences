@@ -28,3 +28,20 @@ article {
   color: var(--text-muted, #4a5d50);
   line-height: 1.7;
 }
+
+:host-context(.dark) .about-wrap {
+  background: linear-gradient(120deg, rgb(2 6 23 / 0.9), rgb(15 23 42 / 0.88));
+  border-color: rgb(71 85 105 / 0.75);
+}
+
+:host-context(.dark) .eyebrow {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .intro {
+  color: #e2e8f0;
+}
+
+:host-context(.dark) article {
+  color: #cbd5e1;
+}

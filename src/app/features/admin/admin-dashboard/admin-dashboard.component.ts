@@ -13,6 +13,8 @@ import {
   DEFAULT_THEME,
   HomeContent,
   HomeSection,
+  LeadRecord,
+  LeadStatus,
   MediaItem,
   Product,
   ProductCategory,
@@ -32,7 +34,9 @@ type SeparatorOption = {
 
 type ProductFilterCategory = ProductCategory | 'all';
 
-type AdminView = 'dashboard' | 'users' | 'products' | 'analytics' | 'settings';
+type AdminView = 'dashboard' | 'users' | 'inquiries' | 'products' | 'analytics' | 'settings';
+
+type LeadFilterStatus = LeadStatus | 'all';
 
 type SidebarItem = {
   view: AdminView;
@@ -95,6 +99,7 @@ export class AdminDashboardComponent {
   readonly publishedContent = this.siteContent.content;
   readonly products = this.siteContent.products;
   readonly media = this.siteContent.media;
+  readonly leads = this.siteContent.leads;
   readonly fallbackLogoUrl = DEFAULT_SETTINGS.logoUrl;
   readonly sidebarLogoFallbackUrl = getBrandLogoWithBackgroundUrl('adminSidebar');
 
@@ -115,19 +120,27 @@ export class AdminDashboardComponent {
       shortcut: 'Alt+2'
     },
     {
+      view: 'inquiries',
+      label: 'Inquiries',
+      description: 'Contact form submissions',
+      iconPath:
+        'M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Zm2.3.5 5.7 4.27L17.7 6H6.3Zm11.7 2.35-4.9 3.67a1.9 1.9 0 0 1-2.2 0L6 8.35V18.5c0 .28.22.5.5.5h11a.5.5 0 0 0 .5-.5V8.35Z',
+      shortcut: 'Alt+3'
+    },
+    {
       view: 'products',
       label: 'Products / Services',
       description: 'Catalog operations',
       iconPath:
         'M4 7V4a1 1 0 0 1 1-1h4l2 2h8a1 1 0 0 1 1 1v1H4Zm0 2h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9Zm3 3v5h2v-5H7Zm4 0v5h2v-5h-2Zm4 0v5h2v-5h-2Z',
-      shortcut: 'Alt+3'
+      shortcut: 'Alt+4'
     },
     {
       view: 'analytics',
       label: 'Analytics',
       description: 'Insights and trends',
       iconPath: 'M4 19h16v2H4v-2Zm1-2h3V8H5v9Zm5 0h3V4h-3v13Zm5 0h3v-6h-3v6Z',
-      shortcut: 'Alt+4'
+      shortcut: 'Alt+5'
     },
     {
       view: 'settings',
@@ -135,7 +148,7 @@ export class AdminDashboardComponent {
       description: 'Content, media, and theme',
       iconPath:
         'M12 8.6A3.4 3.4 0 1 0 12 15.4a3.4 3.4 0 0 0 0-6.8Zm9 3.4-.93-.54a7.53 7.53 0 0 0-.16-1.3l.86-.67a1 1 0 0 0 .25-1.3l-1.5-2.6a1 1 0 0 0-1.25-.43l-1 .4c-.33-.28-.68-.54-1.06-.76L15.1 3.7a1 1 0 0 0-.98-.7h-3a1 1 0 0 0-.98.7l-.31 1.06c-.38.22-.73.48-1.06.76l-1-.4a1 1 0 0 0-1.25.43l-1.5 2.6a1 1 0 0 0 .25 1.3l.86.67c-.07.43-.12.86-.16 1.3L3 12a1 1 0 0 0 0 1.8l.93.54c.04.44.09.87.16 1.3l-.86.67a1 1 0 0 0-.25 1.3l1.5 2.6a1 1 0 0 0 1.25.43l1-.4c.33.28.68.54 1.06.76l.31 1.06a1 1 0 0 0 .98.7h3a1 1 0 0 0 .98-.7l.31-1.06c.38-.22.73-.48 1.06-.76l1 .4a1 1 0 0 0 1.25-.43l1.5-2.6a1 1 0 0 0-.25-1.3l-.86-.67c.07-.43.12-.86.16-1.3L21 13.8a1 1 0 0 0 0-1.8Z',
-      shortcut: 'Alt+5'
+      shortcut: 'Alt+6'
     }
   ];
 
@@ -183,6 +196,7 @@ export class AdminDashboardComponent {
   readonly profileMenuOpen = signal(false);
   readonly notificationsOpen = signal(false);
   readonly dashboardSearchQuery = signal('');
+  readonly inquiryStatusFilter = signal<LeadFilterStatus>('all');
   readonly lastSavedAtSignal = signal<number | null>(null);
   readonly productSearchQuery = signal('');
   readonly productCategoryFilter = signal<ProductFilterCategory>('all');
@@ -226,7 +240,7 @@ export class AdminDashboardComponent {
     {
       id: crypto.randomUUID(),
       title: 'Security notice',
-      detail: 'Keyboard shortcuts enabled: Alt+1 to Alt+5 for view navigation.',
+      detail: 'Keyboard shortcuts enabled: Alt+1 to Alt+6 for view navigation.',
       createdAt: Date.now() - 45_000,
       tone: 'success'
     }
@@ -254,6 +268,22 @@ export class AdminDashboardComponent {
     return this.sidebarItems.find((item) => item.view === selectedView) || this.sidebarItems[0];
   });
 
+  readonly globalSearchLabel = computed(() => {
+    if (this.activeView() === 'inquiries') {
+      return 'Search inquiries';
+    }
+
+    return 'Search dashboard users';
+  });
+
+  readonly globalSearchPlaceholder = computed(() => {
+    if (this.activeView() === 'inquiries') {
+      return 'Search by name, email, company, message, or source path';
+    }
+
+    return 'Search users by name, email, or status';
+  });
+
   readonly dashboardStatCards = computed<DashboardStatCard[]>(() => {
     const kpi = this.dashboardKpis();
     return [
@@ -276,10 +306,10 @@ export class AdminDashboardComponent {
         trendTone: 'neutral'
       },
       {
-        label: 'Reports',
-        value: Math.max(3, kpi.sectionCount + kpi.highlightCount).toString(),
-        trend: '1 pending approval',
-        trendTone: 'warning'
+        label: 'Open Inquiries',
+        value: this.leads().filter((lead) => lead.status !== 'closed').length.toString(),
+        trend: `${this.leads().length} total submissions`,
+        trendTone: this.leads().length > 0 ? 'warning' : 'neutral'
       }
     ];
   });
@@ -297,6 +327,54 @@ export class AdminDashboardComponent {
         user.status.toLowerCase().includes(query)
       );
     });
+  });
+
+  readonly filteredLeads = computed(() => {
+    const query = this.dashboardSearchQuery().trim().toLowerCase();
+    const statusFilter = this.inquiryStatusFilter();
+
+    return this.leads().filter((lead) => {
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      if (!matchesStatus) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      return (
+        lead.name.toLowerCase().includes(query) ||
+        lead.email.toLowerCase().includes(query) ||
+        lead.company.toLowerCase().includes(query) ||
+        lead.phone.toLowerCase().includes(query) ||
+        lead.message.toLowerCase().includes(query) ||
+        lead.sourcePath.toLowerCase().includes(query) ||
+        lead.status.toLowerCase().includes(query)
+      );
+    });
+  });
+
+  readonly leadStatusCounts = computed(() => {
+    const leads = this.leads();
+    const next = {
+      total: leads.length,
+      newCount: 0,
+      inProgressCount: 0,
+      closedCount: 0
+    };
+
+    leads.forEach((lead) => {
+      if (lead.status === 'new') {
+        next.newCount += 1;
+      } else if (lead.status === 'in-progress') {
+        next.inProgressCount += 1;
+      } else if (lead.status === 'closed') {
+        next.closedCount += 1;
+      }
+    });
+
+    return next;
   });
 
   readonly activityFeed = computed<ActivityItem[]>(() => {
@@ -321,6 +399,13 @@ export class AdminDashboardComponent {
         description: 'Media library supports reusable images for products and announcements.',
         timeLabel: 'Today',
         tone: 'info'
+      },
+      {
+        id: 'activity-leads',
+        title: `${this.leads().length} inquiry submission(s) received`,
+        description: 'Open the inquiries tab to review and update follow-up status.',
+        timeLabel: 'Today',
+        tone: this.leads().length > 0 ? 'warning' : 'info'
       }
     ];
 
@@ -446,6 +531,41 @@ export class AdminDashboardComponent {
     this.notify(`Removed ${row.name} from the dashboard table.`, 'warning');
   }
 
+  async setLeadStatus(lead: LeadRecord, status: LeadStatus): Promise<void> {
+    if (lead.status === status) {
+      return;
+    }
+
+    try {
+      await this.siteContent.updateLeadStatus(lead.id, status);
+      this.notify(`Inquiry status updated to ${this.getLeadStatusLabel(status)}.`, 'success');
+    } catch (error) {
+      this.handleError('Unable to update inquiry status.', error);
+    }
+  }
+
+  getLeadStatusLabel(status: LeadStatus): string {
+    switch (status) {
+      case 'new':
+        return 'New';
+      case 'in-progress':
+        return 'In Progress';
+      case 'closed':
+        return 'Closed';
+      default:
+        return status;
+    }
+  }
+
+  formatLeadTimestamp(timestamp: number): string {
+    return new Date(timestamp).toLocaleString();
+  }
+
+  resetInquiryFilters(): void {
+    this.inquiryStatusFilter.set('all');
+    this.dashboardSearchQuery.set('');
+  }
+
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     this.mobileSidebarOpen.set(false);
@@ -459,8 +579,8 @@ export class AdminDashboardComponent {
     const tag = target?.tagName || '';
     const isTypingTarget = tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable;
 
-    if (!isTypingTarget && event.altKey && /^[1-5]$/.test(event.key)) {
-      const map: AdminView[] = ['dashboard', 'users', 'products', 'analytics', 'settings'];
+    if (!isTypingTarget && event.altKey && /^[1-6]$/.test(event.key)) {
+      const map: AdminView[] = ['dashboard', 'users', 'inquiries', 'products', 'analytics', 'settings'];
       const index = Number(event.key) - 1;
       const nextView = map[index];
       if (nextView) {
@@ -893,7 +1013,7 @@ export class AdminDashboardComponent {
   }
 
   jumpToTab(index: number): void {
-    const map: AdminView[] = ['settings', 'products', 'settings', 'settings', 'analytics'];
+    const map: AdminView[] = ['settings', 'products', 'inquiries', 'settings', 'analytics'];
     const nextView = map[index] || 'dashboard';
     this.setActiveView(nextView);
   }
