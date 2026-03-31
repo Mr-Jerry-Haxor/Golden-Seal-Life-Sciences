@@ -1,3 +1,5 @@
+import { GOLDEN_SEAL_LOGO_URL } from '../config/brand-assets.config';
+
 export type ProductCategory =
   | 'Aqua Probiotics'
   | 'Agricultural Micronutrients'
@@ -150,7 +152,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   companyTagline: 'Advanced biotech and chemical solutions for sustainable growth.',
   companyStory:
     'Golden Seal Life Sciences bridges molecular science and field-level application across aqua probiotics, agricultural micronutrients, and high-purity fine chemicals.',
-  logoUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=320&q=80',
+  logoUrl: GOLDEN_SEAL_LOGO_URL,
   contactEmail: 'info@goldenseallifesciences.com',
   contactPhone: '+91-00000-00000',
   whatsappNumber: '+91-00000-00000',

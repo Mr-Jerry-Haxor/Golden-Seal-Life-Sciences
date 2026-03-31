@@ -5,10 +5,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 import { SiteContentService } from '../../../core/services/site-content.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-contact',
@@ -19,8 +19,7 @@ import { SiteContentService } from '../../../core/services/site-content.service'
     MatFormFieldModule,
     MatInputModule,
     MatCheckboxModule,
-    MatButtonModule,
-    MatSnackBarModule
+    MatButtonModule
   ],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
@@ -28,10 +27,11 @@ import { SiteContentService } from '../../../core/services/site-content.service'
 export class ContactComponent {
   private readonly fb = inject(FormBuilder);
   private readonly analytics = inject(AnalyticsService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly siteContent = inject(SiteContentService);
 
+  readonly isLoading = this.siteContent.isLoading;
   readonly settings = this.siteContent.settings;
 
   readonly form = this.fb.nonNullable.group({
@@ -72,12 +72,15 @@ export class ContactComponent {
         message: '',
         consent: false
       });
-      this.snackBar.open('Thank you. Your message has been submitted.', 'Close', {
-        duration: 3500
+      this.toast.show({
+        message: 'Thank you. Your message has been submitted.',
+        tone: 'success'
       });
     } catch {
-      this.snackBar.open('Submission failed. Please verify Firebase setup and try again.', 'Close', {
-        duration: 4200
+      this.toast.show({
+        message: 'Submission failed. Please verify Firebase setup and try again.',
+        tone: 'error',
+        durationMs: 4200
       });
     } finally {
       this.submitting = false;

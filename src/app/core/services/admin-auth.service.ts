@@ -1,5 +1,13 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { AuthErrorCodes, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import {
+  AuthErrorCodes,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  onAuthStateChanged,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth';
 import { cmsSecurityConfig } from '../config/firebase.config';
 import { FirebaseService } from './firebase.service';
 
@@ -54,7 +62,7 @@ export class AdminAuthService {
       return;
     }
 
-    const hasToken = localStorage.getItem(MOCK_ADMIN_TOKEN_KEY) === 'true';
+    const hasToken = this.readMockToken();
     if (hasToken && cmsSecurityConfig.allowMockAdminWhenFirebaseUnavailable) {
       this.statusSignal.set('authenticated');
       this.emailSignal.set(this.adminEmail);
@@ -73,11 +81,12 @@ export class AdminAuthService {
     return this.authInitialized;
   }
 
-  async login(email: string, password: string): Promise<LoginResult> {
+  async login(email: string, password: string, rememberMe = true): Promise<LoginResult> {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (this.firebase.auth) {
       try {
+        await setPersistence(this.firebase.auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
         const credentials = await signInWithEmailAndPassword(this.firebase.auth, normalizedEmail, password);
         if (!this.isAllowedAdmin(credentials.user.email)) {
           await signOut(this.firebase.auth);
@@ -108,7 +117,7 @@ export class AdminAuthService {
       normalizedEmail === this.adminEmail.toLowerCase() &&
       password === cmsSecurityConfig.fallbackPassword
     ) {
-      localStorage.setItem(MOCK_ADMIN_TOKEN_KEY, 'true');
+      this.writeMockToken(rememberMe);
       this.statusSignal.set('authenticated');
       this.emailSignal.set(this.adminEmail);
       return {
@@ -131,8 +140,21 @@ export class AdminAuthService {
     }
 
     localStorage.removeItem(MOCK_ADMIN_TOKEN_KEY);
+    sessionStorage.removeItem(MOCK_ADMIN_TOKEN_KEY);
     this.statusSignal.set('unauthenticated');
     this.emailSignal.set(null);
+  }
+
+  private readMockToken(): boolean {
+    return localStorage.getItem(MOCK_ADMIN_TOKEN_KEY) === 'true' || sessionStorage.getItem(MOCK_ADMIN_TOKEN_KEY) === 'true';
+  }
+
+  private writeMockToken(rememberMe: boolean): void {
+    const targetStorage = rememberMe ? localStorage : sessionStorage;
+    const otherStorage = rememberMe ? sessionStorage : localStorage;
+
+    targetStorage.setItem(MOCK_ADMIN_TOKEN_KEY, 'true');
+    otherStorage.removeItem(MOCK_ADMIN_TOKEN_KEY);
   }
 
   private get adminEmail(): string {

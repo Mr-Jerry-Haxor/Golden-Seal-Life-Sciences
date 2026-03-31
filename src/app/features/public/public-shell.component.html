@@ -1,83 +1,206 @@
-<header class="main-header">
-  <a class="brand-block" routerLink="/" (click)="closeMobileNav()" aria-label="Golden Seal Life Sciences home">
-    <img
-      class="brand-logo"
-      [src]="brandLogoUrl()"
-      [alt]="settings().companyName + ' logo'"
-      (error)="useFallbackLogo($event)"
-    />
-    <span class="brand-copy">
-      <strong>{{ settings().companyName }}</strong>
-      <small>{{ settings().companyTagline }}</small>
-    </span>
-  </a>
-
-  <button
-    class="menu-toggle"
-    type="button"
-    (click)="toggleMobileNav()"
-    [attr.aria-expanded]="mobileNavOpen()"
-    aria-controls="public-main-nav"
-  >
-    {{ mobileNavOpen() ? 'Close' : 'Menu' }}
-  </button>
-
-  <nav id="public-main-nav" class="nav-links" [class.open]="mobileNavOpen()" aria-label="Main navigation">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileNav()">Home</a>
-    <a routerLink="/products" routerLinkActive="active" (click)="closeMobileNav()">Products</a>
-    <a routerLink="/about" routerLinkActive="active" (click)="closeMobileNav()">About</a>
-    <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileNav()">Contact</a>
-    <a mat-flat-button color="primary" class="nav-cta interactive" routerLink="/contact" (click)="closeMobileNav()">
-      Get In Touch
+<header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/85">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
+    <a class="flex min-w-0 items-center gap-3" routerLink="/" (click)="closeMobileNav()" aria-label="Golden Seal Life Sciences home">
+      <img
+        class="h-11 w-11 rounded-xl border border-slate-200 object-cover shadow-md shadow-slate-200/70"
+        [src]="brandLogoUrl()"
+        [alt]="settings().companyName + ' logo'"
+        (error)="useFallbackLogo($event)"
+      />
+      <span class="min-w-0">
+        <strong class="block truncate text-base font-semibold text-slate-900 dark:text-slate-100">{{ settings().companyName }}</strong>
+        <small class="block truncate text-xs text-slate-500 dark:text-slate-400">{{ settings().companyTagline }}</small>
+      </span>
     </a>
-  </nav>
+
+    <button
+      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 lg:hidden"
+      type="button"
+      (click)="toggleMobileNav()"
+      [attr.aria-expanded]="mobileNavOpen()"
+      aria-controls="public-main-nav-mobile"
+    >
+      {{ mobileNavOpen() ? 'Close' : 'Menu' }}
+    </button>
+
+    <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="bg-slate-900 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        Home
+      </a>
+      <a
+        routerLink="/products"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        Products
+      </a>
+      <a
+        routerLink="/about"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        About
+      </a>
+      <a
+        routerLink="/contact"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        Contact
+      </a>
+
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="toggleDarkMode()"
+        [attr.aria-pressed]="isDarkMode()"
+      >
+        {{ isDarkMode() ? 'Light Mode' : 'Dark Mode' }}
+      </button>
+
+      <a
+        routerLink="/contact"
+        class="ml-2 inline-flex items-center justify-center rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+      >
+        Get Consultation
+      </a>
+    </nav>
+  </div>
+
+  <div id="public-main-nav-mobile" class="border-t border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-950 lg:hidden" [class.hidden]="!mobileNavOpen()">
+    <nav class="mx-auto grid max-w-7xl gap-2 px-6 py-4" aria-label="Mobile navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="bg-slate-900 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="closeMobileNav()"
+      >
+        Home
+      </a>
+      <a
+        routerLink="/products"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="closeMobileNav()"
+      >
+        Products
+      </a>
+      <a
+        routerLink="/about"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="closeMobileNav()"
+      >
+        About
+      </a>
+      <a
+        routerLink="/contact"
+        routerLinkActive="bg-slate-900 text-white"
+        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="closeMobileNav()"
+      >
+        Contact
+      </a>
+
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 px-3 py-2 text-left text-sm font-medium text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="toggleDarkMode()"
+      >
+        {{ isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+      </button>
+
+      <a
+        routerLink="/contact"
+        class="mt-2 inline-flex items-center justify-center rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+        (click)="closeMobileNav()"
+      >
+        Get Consultation
+      </a>
+    </nav>
+  </div>
 </header>
 
-<main class="content-shell">
-  <router-outlet></router-outlet>
+<main class="px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+    <router-outlet></router-outlet>
+  </div>
 </main>
 
-<footer class="main-footer">
-  <div class="footer-grid">
-    <section class="footer-brand">
-      <h4>{{ settings().companyName }}</h4>
-      <p>{{ settings().companyStory }}</p>
-    </section>
-
-    <section>
-      <h5>Quick Links</h5>
-      <a routerLink="/" (click)="closeMobileNav()">Home</a>
-      <a routerLink="/products" (click)="closeMobileNav()">Solutions</a>
-      <a routerLink="/about" (click)="closeMobileNav()">About</a>
-      <a routerLink="/contact" (click)="closeMobileNav()">Contact</a>
-    </section>
-
-    <section>
-      <h5>Focus Areas</h5>
-      <p>Aqua Probiotics</p>
-      <p>Agricultural Micronutrients</p>
-      <p>Fine Chemicals</p>
-    </section>
-
-    <section>
-      <h5>Contact</h5>
-      <p>{{ settings().contactEmail }}</p>
-      <p>{{ settings().contactPhone }}</p>
-      <p>{{ settings().address }}</p>
-    </section>
-
-    <section>
-      <h5>Connect</h5>
-      <div class="social-links" aria-label="Social profiles">
-        <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
-        <a href="https://x.com" target="_blank" rel="noreferrer">X</a>
-        <a href="https://www.youtube.com" target="_blank" rel="noreferrer">YouTube</a>
+<footer class="border-t border-slate-200 bg-white/95 dark:border-slate-800 dark:bg-slate-950/95">
+  <div class="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <section class="space-y-4 lg:col-span-2">
+      <img
+        class="h-14 w-auto rounded-xl border border-slate-200/70 bg-white p-1 shadow-sm shadow-slate-200/70 dark:border-slate-700/70 dark:bg-slate-900"
+        [src]="footerBrandLogoUrl()"
+        [alt]="settings().companyName + ' logo mark'"
+        loading="lazy"
+      />
+      <h4 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ settings().companyName }}</h4>
+      <p class="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">{{ settings().companyStory }}</p>
+      <div class="flex flex-wrap gap-3">
+        <a
+          href="https://www.linkedin.com"
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+            <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5ZM.5 8h4V23h-4V8Zm7 0h3.8v2.05h.05c.53-1 1.85-2.05 3.8-2.05 4.07 0 4.82 2.68 4.82 6.17V23h-4v-7.58c0-1.8-.03-4.12-2.5-4.12-2.5 0-2.88 1.95-2.88 3.98V23h-4V8Z" />
+          </svg>
+          LinkedIn
+        </a>
+        <a
+          href="https://x.com"
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+            <path d="M18.9 2H22l-6.78 7.75L23 22h-6.05l-4.74-6.2L6.78 22H3.67l7.24-8.27L1 2h6.2l4.3 5.68L18.9 2Zm-1.06 18h1.73L6.28 3.88H4.41L17.84 20Z" />
+          </svg>
+          X
+        </a>
+        <a
+          href="https://www.youtube.com"
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+            <path d="M23.5 7.2a2.9 2.9 0 0 0-2.04-2.04C19.7 4.7 12 4.7 12 4.7s-7.7 0-9.46.46A2.9 2.9 0 0 0 .5 7.2 30.58 30.58 0 0 0 0 12a30.58 30.58 0 0 0 .5 4.8 2.9 2.9 0 0 0 2.04 2.04c1.76.46 9.46.46 9.46.46s7.7 0 9.46-.46a2.9 2.9 0 0 0 2.04-2.04A30.58 30.58 0 0 0 24 12a30.58 30.58 0 0 0-.5-4.8ZM9.75 15.5V8.5l6 3.5-6 3.5Z" />
+          </svg>
+          YouTube
+        </a>
       </div>
+    </section>
+
+    <section class="space-y-3">
+      <h5 class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Quick Links</h5>
+      <a routerLink="/" class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" (click)="closeMobileNav()">Home</a>
+      <a routerLink="/products" class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" (click)="closeMobileNav()">Products</a>
+      <a routerLink="/about" class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" (click)="closeMobileNav()">About</a>
+      <a routerLink="/contact" class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" (click)="closeMobileNav()">Contact</a>
+    </section>
+
+    <section class="space-y-3">
+      <h5 class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Contact</h5>
+      <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().contactEmail }}</p>
+      <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().contactPhone }}</p>
+      <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().address }}</p>
     </section>
   </div>
 
-  <div class="footer-bottom">
-    <small>© {{ year }} {{ settings().companyName }}. All rights reserved.</small>
-    <small>Advancing science with sustainability, trust, and precision.</small>
+  <div class="border-t border-slate-200/80 dark:border-slate-800">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-5 text-xs text-slate-500 dark:text-slate-400">
+      <small>© {{ year }} {{ settings().companyName }}. All rights reserved.</small>
+      <small>Engineered for trust, precision, and sustainable life sciences growth.</small>
+    </div>
   </div>
 </footer>

@@ -14,6 +14,7 @@ import { SiteContentService } from '../../../core/services/site-content.service'
 export class ProductsComponent {
   private readonly siteContent = inject(SiteContentService);
 
+  readonly isLoading = this.siteContent.isLoading;
   readonly products = this.siteContent.products;
   readonly groupedProducts = computed(() => {
     const groups = new Map<string, typeof this.products extends () => infer R ? R : never>();

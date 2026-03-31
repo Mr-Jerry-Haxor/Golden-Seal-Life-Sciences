@@ -1,3 +1,13 @@
+@if (isLoading()) {
+  <section class="space-y-6" aria-label="Loading products">
+    <div class="h-36 animate-pulse rounded-3xl bg-slate-200/70 dark:bg-slate-800"></div>
+    <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="h-72 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800"></div>
+      }
+    </div>
+  </section>
+} @else {
 <section class="products-hero">
   <p class="eyebrow">Catalog</p>
   <h1>Product Portfolio</h1>
@@ -35,4 +45,5 @@
   <section class="empty-state">
     <p>No products are published yet. Add products from the admin dashboard.</p>
   </section>
+}
 }

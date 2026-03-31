@@ -1,298 +1,253 @@
-@if (announcement().enabled && announcement().mode === 'text' && announcementTextItems().length > 0) {
-  <section class="announcement-strip text-mode reveal" [style.--ticker-duration]="announcementTickerDuration()">
-    <p class="announcement-label">Announcement</p>
-    <div class="ticker-track" aria-live="polite">
-      <p>{{ announcementTickerText() }}</p>
-      <p aria-hidden="true">{{ announcementTickerText() }}</p>
-    </div>
-  </section>
-}
-
-@if (announcement().enabled && announcement().mode === 'image' && announcementImageItems().length > 0) {
-  <section class="announcement-strip image-mode reveal" aria-label="Announcement slideshow">
-    <div class="announcement-media">
-      <img
-        [src]="currentAnnouncementImage()?.imageUrl"
-        [alt]="currentAnnouncementImage()?.alt || 'Announcement slide'"
-      />
-      <div class="announcement-overlay">
-        <p class="announcement-label">Announcement</p>
-        <h2>{{ currentAnnouncementImage()?.caption || 'Latest Updates from Golden Seal Life Sciences' }}</h2>
-      </div>
-    </div>
-    <div class="announcement-dots" role="tablist" aria-label="Announcement slides">
-      @for (slide of announcementImageItems(); track slide.id; let index = $index) {
-        <button
-          type="button"
-          role="tab"
-          [attr.aria-selected]="index === currentAnnouncementImageIndex()"
-          [class.active]="index === currentAnnouncementImageIndex()"
-          [attr.aria-label]="'View announcement slide ' + (index + 1)"
-          (click)="goToAnnouncementImage(index)"
-        ></button>
+@if (isLoading()) {
+  <section class="space-y-8 pb-10" aria-label="Loading homepage content">
+    <div class="h-[420px] animate-pulse rounded-3xl bg-slate-200/80 dark:bg-slate-800"></div>
+    <div class="grid gap-4 md:grid-cols-3">
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="h-28 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800"></div>
       }
     </div>
-  </section>
-}
-
-<section
-  class="hero reveal"
-  [style.background-image]="
-    content().hero.backgroundImageUrl
-      ? 'linear-gradient(122deg, rgba(8, 27, 52, 0.82), rgba(11, 105, 83, 0.72)), url(' + content().hero.backgroundImageUrl + ')'
-      : ''
-  "
->
-  <div class="hero-decor hero-decor-1" aria-hidden="true"></div>
-  <div class="hero-decor hero-decor-2" aria-hidden="true"></div>
-  <div class="hero-dna" aria-hidden="true"></div>
-
-  <div class="hero-content">
-    <p class="eyebrow">Biotechnology + Agriculture + Chemical Innovation</p>
-    <h1>Advancing Science for Sustainable Growth</h1>
-    <p class="hero-copy">
-      {{ content().hero.subheading }} Our solutions in aqua probiotics, agricultural micronutrients, and fine chemicals
-      are engineered to turn molecular precision into real-world productivity.
-    </p>
-
-    <div class="hero-actions">
-      <a mat-flat-button color="primary" class="interactive" [routerLink]="content().hero.ctaPrimaryLink">
-        Explore Solutions
-      </a>
-      <a mat-stroked-button class="interactive" [routerLink]="content().hero.ctaSecondaryLink">Contact Us</a>
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="h-80 animate-pulse rounded-3xl bg-slate-200/70 dark:bg-slate-800"></div>
+      <div class="h-80 animate-pulse rounded-3xl bg-slate-200/70 dark:bg-slate-800"></div>
     </div>
+  </section>
+} @else {
+<div class="space-y-16 pb-10">
+  <section
+    class="reveal-item relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--brand-primary)] via-[#123a63] to-[#1b8f6a] px-6 py-16 text-white shadow-2xl shadow-slate-900/20 opacity-0 translate-y-8 transition-all duration-700 md:px-10 lg:px-14"
+  >
+    <div class="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-[var(--brand-secondary)]/25 blur-3xl"></div>
+    <div class="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl"></div>
+    <div class="relative z-10 grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+      <div class="space-y-6">
+        <img
+          [src]="heroLogoUrl"
+          [alt]="settings().companyName + ' logo'"
+          class="h-16 w-auto rounded-2xl border border-white/35 bg-white/90 p-2 shadow-lg shadow-slate-900/30"
+          loading="eager"
+        />
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200/90">Trusted Biotech Platform</p>
+        <h1 class="max-w-[14ch] text-4xl font-extrabold leading-tight md:text-6xl">
+          {{ content().hero.heading || 'Premium Life Sciences Solutions Built for Performance' }}
+        </h1>
+        <p class="max-w-2xl text-base text-slate-100/90 md:text-lg">
+          {{ content().hero.subheading }}
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a
+            routerLink="/contact"
+            class="inline-flex items-center justify-center rounded-xl bg-[var(--brand-secondary)] px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-200/30"
+          >
+            Get Consultation
+          </a>
+          <a
+            routerLink="/about"
+            class="inline-flex items-center justify-center rounded-xl border border-white/60 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20"
+          >
+            Learn More
+          </a>
+        </div>
 
-    <div class="hero-highlights">
-      @for (highlight of content().highlights; track highlight) {
-        <article class="glass-card">
-          <span class="dot" aria-hidden="true"></span>
-          <p>{{ highlight }}</p>
+        <div class="grid gap-3 sm:grid-cols-3">
+          @for (highlight of displayedHighlights(); track highlight) {
+            <article class="rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-md">
+              <p class="text-sm text-slate-100">{{ highlight }}</p>
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="hidden lg:block">
+        <div class="relative overflow-hidden rounded-3xl border border-white/25 bg-white/10 p-3 backdrop-blur-md">
+          <img
+            [src]="
+              content().hero.backgroundImageUrl ||
+              'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1280&q=80'
+            "
+            alt="Biotech laboratory team working with advanced analytical equipment"
+            class="h-[420px] w-full rounded-2xl object-cover"
+          />
+
+          <div class="absolute inset-x-8 bottom-8 grid gap-3">
+            @for (stat of capabilityStats; track stat.label) {
+              <article class="rounded-xl border border-white/25 bg-slate-950/45 px-4 py-3 backdrop-blur">
+                <p class="text-2xl font-bold text-emerald-200">{{ stat.value }}</p>
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-200/85">{{ stat.label }}</p>
+              </article>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal-item opacity-0 translate-y-8 transition-all duration-700">
+    <div class="grid gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm shadow-slate-200/60 md:grid-cols-3 md:p-6">
+      @for (badge of trustBadges; track badge.label) {
+        <article class="flex items-start gap-3 rounded-xl bg-slate-50/80 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+          <span class="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100/80 text-[var(--brand-primary)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="badge.iconPath"></path>
+            </svg>
+          </span>
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">{{ badge.label }}</h2>
+            <p class="mt-1 text-sm text-slate-600">{{ badge.description }}</p>
+          </div>
         </article>
       }
     </div>
-  </div>
+  </section>
 
-  <aside class="hero-metrics glass-card" aria-label="Key focus metrics">
-    <h2>Science-Led Focus Areas</h2>
-    <div>
-      <p class="metric-value">98.7%</p>
-      <p class="metric-label">Batch Purity Consistency</p>
-    </div>
-    <div>
-      <p class="metric-value">24/7</p>
-      <p class="metric-label">Technical Response Support</p>
-    </div>
-    <div>
-      <p class="metric-value">3X</p>
-      <p class="metric-label">Faster Pilot-to-Field Validation</p>
-    </div>
-  </aside>
-</section>
-
-<section class="about reveal" id="about">
-  <div class="about-media glass-card">
-    <img
-      src="https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&w=1200&q=80"
-      alt="Scientists evaluating biotechnology solutions for sustainable agriculture"
-    />
-    <div class="media-overlay" aria-hidden="true"></div>
-  </div>
-
-  <div class="about-copy">
-    <p class="section-label">About Golden Seal</p>
-    <h2>Bridging Molecular Science With Field-Level Application</h2>
-    <p>
-      Golden Seal Life Sciences combines advanced biotech research with practical deployment models for aquaculture,
-      agriculture, and industrial chemistry. Every formulation is designed for measurable outcomes, sustainability,
-      and long-term reliability.
-    </p>
-
-    <div class="mission-icons">
-      <article>
-        <span class="icon-badge lab" aria-hidden="true">🧪</span>
-        <div>
-          <h3>Lab Precision</h3>
-          <p>Rigorous formulation and controlled validation workflows.</p>
+  <section class="reveal-item opacity-0 translate-y-8 transition-all duration-700" id="about">
+    <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 p-6 shadow-lg shadow-slate-200/60 lg:p-10">
+      <div class="pointer-events-none absolute -right-16 top-12 h-52 w-52 rounded-full bg-emerald-200/30 blur-3xl"></div>
+      <div class="relative grid items-center gap-8 lg:grid-cols-2">
+        <div class="space-y-5">
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">About Us</p>
+          <h2 class="text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
+            Strategic Scientific Partnerships for Long-Term Growth
+          </h2>
+          <p class="text-base leading-relaxed text-slate-600">
+            {{ settings().companyStory }}
+          </p>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <article class="rounded-xl border border-slate-200 bg-white p-4">
+              <h3 class="text-sm font-semibold text-slate-900">Lab Validation</h3>
+              <p class="mt-1 text-sm text-slate-600">Formulations validated through scientific protocols before field deployment.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-4">
+              <h3 class="text-sm font-semibold text-slate-900">Field Proven</h3>
+              <p class="mt-1 text-sm text-slate-600">Deployment models designed for practical use in real production environments.</p>
+            </article>
+          </div>
         </div>
-      </article>
-      <article>
-        <span class="icon-badge leaf" aria-hidden="true">🌿</span>
-        <div>
-          <h3>Eco-Forward Design</h3>
-          <p>Optimized for sustainability, soil health, and ecological balance.</p>
+
+        <div class="relative">
+          <img
+            src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80"
+            alt="Life sciences researchers in a modern laboratory"
+            class="h-full min-h-[320px] w-full rounded-2xl object-cover"
+          />
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-[var(--brand-primary)]/20 via-transparent to-transparent"></div>
         </div>
-      </article>
-      <article>
-        <span class="icon-badge water" aria-hidden="true">💧</span>
-        <div>
-          <h3>Aqua Intelligence</h3>
-          <p>Water-system centered formulations for resilient aquaculture output.</p>
-        </div>
-      </article>
-      <article>
-        <span class="icon-badge industry" aria-hidden="true">⚙️</span>
-        <div>
-          <h3>Industrial Reliability</h3>
-          <p>Consistent quality standards across manufacturing environments.</p>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="categories reveal" id="solutions">
-  <header>
-    <p class="section-label">Product Categories</p>
-    <h2>Purpose-Built Solutions for High-Impact Outcomes</h2>
-    <p>
-      A responsive portfolio built for productivity, trust, and scalability across biotechnology, agriculture, and
-      chemical operations.
-    </p>
-  </header>
-
-  <div class="category-grid">
-    @for (category of categoryCards(); track category.title) {
-      <article class="category-card glass-card interactive">
-        <div class="category-head">
-          <span>{{ category.shortLabel }}</span>
-          <p>{{ category.count }} active products</p>
-        </div>
-        <h3>{{ category.title }}</h3>
-        <p>{{ category.description }}</p>
-        <a mat-stroked-button [routerLink]="category.route">View Category</a>
-      </article>
-    }
-  </div>
-</section>
-
-<section class="innovation reveal">
-  <div class="innovation-copy">
-    <p class="section-label">Innovation & R&D</p>
-    <h2>Research-Driven Formulations, Data-Backed Decisions</h2>
-    <p>
-      Our R&D framework integrates molecular analytics, pilot-scale simulation, and field feedback loops to accelerate
-      reliable innovation.
-    </p>
-    <ul>
-      <li>Biotech and chemistry workflows aligned to application reality</li>
-      <li>Validation across lab, pilot, and deployment environments</li>
-      <li>Rapid adaptation with scientific rigor and compliance-first controls</li>
-    </ul>
-    <a mat-flat-button color="primary" class="interactive" routerLink="/contact">Connect With R&D Team</a>
-  </div>
-
-  <div class="innovation-visual glass-card" aria-hidden="true">
-    <div class="floating molecule"></div>
-    <div class="floating droplet"></div>
-    <div class="floating wave"></div>
-
-    <article>
-      <p>Lab Validation</p>
-      <strong>42 Protocols</strong>
-    </article>
-    <article>
-      <p>Field Trials</p>
-      <strong>120+ Deployments</strong>
-    </article>
-    <article>
-      <p>Optimization Cycles</p>
-      <strong>Monthly Iterations</strong>
-    </article>
-  </div>
-</section>
-
-<section class="impact reveal">
-  <header>
-    <p class="section-label">Impact</p>
-    <h2>Measurable Value Across Yield, Sustainability, and Efficiency</h2>
-  </header>
-
-  <div class="impact-grid">
-    @for (metric of impactMetrics; track metric.label) {
-      <article class="impact-card glass-card">
-        <p class="metric-title">{{ metric.label }}</p>
-        <p class="metric-counter">
-          <span>{{ metric.prefix }}</span>
-          <span class="counter-value" [attr.data-target]="metric.value">0</span>
-          <span>{{ metric.suffix }}</span>
-        </p>
-        <p class="metric-note">{{ metric.description }}</p>
-      </article>
-    }
-  </div>
-</section>
-
-<section class="trust reveal">
-  <header>
-    <p class="section-label">Trust & Partnerships</p>
-    <h2>Built With Long-Term Collaboration in Mind</h2>
-  </header>
-
-  <div class="trust-carousel">
-    @for (testimonial of testimonials; track testimonial.company) {
-      <article class="testimonial-card glass-card">
-        <p class="quote">“{{ testimonial.quote }}”</p>
-        <div>
-          <h3>{{ testimonial.author }}</h3>
-          <p>{{ testimonial.company }}</p>
-        </div>
-      </article>
-    }
-  </div>
-</section>
-
-<section class="featured reveal">
-  <header>
-    <p class="section-label">Featured Portfolio</p>
-    <h2>Current Products Across Priority Solution Tracks</h2>
-  </header>
-
-  @for (section of sectionsWithProducts(); track section.id) {
-    <div class="feature-strip glass-card">
-      <div class="strip-head">
-        <div>
-          <h3>{{ section.title }}</h3>
-          <p>{{ section.summary }}</p>
-        </div>
-        <a mat-button class="interactive" routerLink="/products">View all products</a>
-      </div>
-
-      <div class="strip-products">
-        @if (section.products.length === 0) {
-          <mat-card class="placeholder-card">
-            <p>No products assigned yet. Add products from the admin dashboard.</p>
-          </mat-card>
-        } @else {
-          @for (product of section.products; track product.id) {
-            <mat-card class="product-card interactive">
-              <img
-                [src]="
-                  product.imageUrl ||
-                  'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=60'
-                "
-                [alt]="product.name"
-              />
-              <div>
-                <h4>{{ product.name }}</h4>
-                <p>{{ product.shortDescription }}</p>
-                <a mat-stroked-button [routerLink]="['/products', product.slug]">Details</a>
-              </div>
-            </mat-card>
-          }
-        }
       </div>
     </div>
-  }
-</section>
+  </section>
 
-<section class="cta reveal" aria-label="Primary call to action">
-  <p class="section-label">Next Step</p>
-  <h2>Partner with us for a more productive and sustainable future</h2>
-  <p>
-    Work with a team focused on scientific excellence, practical deployment, and long-term business performance.
-  </p>
-  <div class="cta-actions">
-    <a mat-flat-button color="primary" class="interactive" routerLink="/contact">Start a Conversation</a>
-    <a mat-stroked-button class="interactive" routerLink="/products">Explore Product Lines</a>
-  </div>
-</section>
+  <section class="reveal-item space-y-8 opacity-0 translate-y-8 transition-all duration-700" id="services">
+    <header class="space-y-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Services</p>
+      <h2 class="text-3xl font-bold text-slate-900 md:text-4xl">Specialized Solutions for Every Growth Stage</h2>
+      <p class="max-w-3xl text-base text-slate-600">
+        We combine biotechnology expertise with operational insight to deliver practical, measurable outcomes.
+      </p>
+    </header>
+
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      @for (service of serviceCards(); track service.title) {
+        <article
+          class="group rounded-xl border border-slate-200 bg-white p-6 shadow-md shadow-slate-200/70 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg"
+        >
+          <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-[var(--brand-primary)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-6 w-6" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="service.iconPath"></path>
+            </svg>
+          </span>
+          <h3 class="mt-4 text-xl font-semibold text-slate-900">{{ service.title }}</h3>
+          <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ service.description }}</p>
+          <div class="mt-5 flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">{{ service.stat }}</p>
+            <a
+              [routerLink]="service.route"
+              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50"
+            >
+              Explore
+            </a>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="reveal-item space-y-8 opacity-0 translate-y-8 transition-all duration-700">
+    <header class="space-y-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Why Choose Us</p>
+      <h2 class="text-3xl font-bold text-slate-900 md:text-4xl">Built for Trust, Precision, and Conversion-Focused Outcomes</h2>
+    </header>
+
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      @for (item of whyChooseUs; track item.title) {
+        <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[var(--brand-primary)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconPath"></path>
+            </svg>
+          </span>
+          <h3 class="mt-4 text-lg font-semibold text-slate-900">{{ item.title }}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ item.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="reveal-item space-y-8 opacity-0 translate-y-8 transition-all duration-700" id="projects">
+    <header class="space-y-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Research and Projects</p>
+      <h2 class="text-3xl font-bold text-slate-900 md:text-4xl">Featured Research Programs and Deployment Successes</h2>
+      <p class="max-w-3xl text-base text-slate-600">
+        From pilot studies to large-scale rollouts, our projects are designed to improve scientific and operational confidence.
+      </p>
+    </header>
+
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      @for (project of featuredProjects(); track project.id) {
+        <article
+          class="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+        >
+          <div class="relative">
+            <img [src]="project.imageUrl" [alt]="project.title" class="h-56 w-full object-cover transition-all duration-500 group-hover:scale-105" />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-[var(--brand-primary)]/70 via-[var(--brand-primary)]/10 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100"
+            ></div>
+            <span
+              class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-primary)]"
+            >
+              {{ project.category }}
+            </span>
+          </div>
+
+          <div class="space-y-3 p-5">
+            <h3 class="text-lg font-semibold text-slate-900">{{ project.title }}</h3>
+            <p class="text-sm leading-relaxed text-slate-600">{{ project.description }}</p>
+            <a
+              [routerLink]="project.route"
+              class="inline-flex items-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50"
+            >
+              View Project
+            </a>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section
+    class="reveal-item rounded-3xl bg-gradient-to-r from-[var(--brand-primary)] to-[#0f3f67] px-6 py-14 text-center text-white shadow-xl shadow-slate-900/20 opacity-0 translate-y-8 transition-all duration-700 md:px-10"
+  >
+    <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">Call to Action</p>
+    <h2 class="mx-auto mt-4 max-w-3xl text-3xl font-bold leading-tight md:text-5xl">
+      Ready to Accelerate Outcomes with a Trusted Life Sciences Partner?
+    </h2>
+    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-100/90 md:text-lg">
+      Schedule a technical consultation to align your goals with the right scientific strategy.
+    </p>
+    <a
+      routerLink="/contact"
+      class="mt-8 inline-flex items-center justify-center rounded-xl bg-[var(--brand-secondary)] px-8 py-3 text-sm font-semibold text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-200/30"
+    >
+      Get Consultation
+    </a>
+  </section>
+</div>
+}

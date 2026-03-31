@@ -1,16 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
+import { getBrandLogoUrl, getBrandLogoWithBackgroundUrl } from '../../../core/config/brand-assets.config';
 import {
   AnnouncementContent,
   AnnouncementImageItem,
@@ -29,6 +22,8 @@ import {
 import { AdminAuthService } from '../../../core/services/admin-auth.service';
 import { MediaService } from '../../../core/services/media.service';
 import { SiteContentService } from '../../../core/services/site-content.service';
+import { ToastTone, ToastService } from '../../../core/services/toast.service';
+import { UiPreferencesService } from '../../../core/services/ui-preferences.service';
 
 type SeparatorOption = {
   value: AnnouncementSeparator;
@@ -37,22 +32,50 @@ type SeparatorOption = {
 
 type ProductFilterCategory = ProductCategory | 'all';
 
+type AdminView = 'dashboard' | 'users' | 'products' | 'analytics' | 'settings';
+
+type SidebarItem = {
+  view: AdminView;
+  label: string;
+  description: string;
+  iconPath: string;
+  shortcut: string;
+};
+
+type AdminUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  status: 'Active' | 'Pending' | 'Suspended';
+};
+
+type DashboardStatCard = {
+  label: string;
+  value: string;
+  trend: string;
+  trendTone: 'positive' | 'neutral' | 'warning';
+};
+
+type AdminNotification = {
+  id: string;
+  title: string;
+  detail: string;
+  createdAt: number;
+  tone: ToastTone;
+};
+
+type ActivityItem = {
+  id: string;
+  title: string;
+  description: string;
+  timeLabel: string;
+  tone: 'success' | 'info' | 'warning';
+};
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatTabsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    MatSnackBarModule,
-    ImageCropperComponent
-  ],
+  imports: [CommonModule, FormsModule, ImageCropperComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -61,13 +84,60 @@ export class AdminDashboardComponent {
   private readonly siteContent = inject(SiteContentService);
   private readonly mediaService = inject(MediaService);
   private readonly auth = inject(AdminAuthService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly toast = inject(ToastService);
+  private readonly uiPreferences = inject(UiPreferencesService);
   private readonly router = inject(Router);
+
+  readonly isLoading = this.siteContent.isLoading;
+  readonly isDarkMode = this.uiPreferences.darkMode;
+  readonly currentAdminEmail = this.auth.currentAdminEmail;
 
   readonly publishedContent = this.siteContent.content;
   readonly products = this.siteContent.products;
   readonly media = this.siteContent.media;
   readonly fallbackLogoUrl = DEFAULT_SETTINGS.logoUrl;
+  readonly sidebarLogoFallbackUrl = getBrandLogoWithBackgroundUrl('adminSidebar');
+
+  readonly sidebarItems: SidebarItem[] = [
+    {
+      view: 'dashboard',
+      label: 'Dashboard',
+      description: 'SaaS overview and activity',
+      iconPath: 'M3 12h7V3H3v9Zm0 9h7v-7H3v7Zm11 0h7V12h-7v9Zm0-18v7h7V3h-7Z',
+      shortcut: 'Alt+1'
+    },
+    {
+      view: 'users',
+      label: 'Users',
+      description: 'Team and access entries',
+      iconPath:
+        'M16 11c1.66 0 2.99-1.79 2.99-4S17.66 3 16 3s-3 1.79-3 4 1.34 4 3 4Zm-8 0c1.66 0 2.99-1.79 2.99-4S9.66 3 8 3 5 4.79 5 7s1.34 4 3 4Zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V20h7v-3.5c0-2.33-4.67-3.5-7-3.5Z',
+      shortcut: 'Alt+2'
+    },
+    {
+      view: 'products',
+      label: 'Products / Services',
+      description: 'Catalog operations',
+      iconPath:
+        'M4 7V4a1 1 0 0 1 1-1h4l2 2h8a1 1 0 0 1 1 1v1H4Zm0 2h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9Zm3 3v5h2v-5H7Zm4 0v5h2v-5h-2Zm4 0v5h2v-5h-2Z',
+      shortcut: 'Alt+3'
+    },
+    {
+      view: 'analytics',
+      label: 'Analytics',
+      description: 'Insights and trends',
+      iconPath: 'M4 19h16v2H4v-2Zm1-2h3V8H5v9Zm5 0h3V4h-3v13Zm5 0h3v-6h-3v6Z',
+      shortcut: 'Alt+4'
+    },
+    {
+      view: 'settings',
+      label: 'Settings',
+      description: 'Content, media, and theme',
+      iconPath:
+        'M12 8.6A3.4 3.4 0 1 0 12 15.4a3.4 3.4 0 0 0 0-6.8Zm9 3.4-.93-.54a7.53 7.53 0 0 0-.16-1.3l.86-.67a1 1 0 0 0 .25-1.3l-1.5-2.6a1 1 0 0 0-1.25-.43l-1 .4c-.33-.28-.68-.54-1.06-.76L15.1 3.7a1 1 0 0 0-.98-.7h-3a1 1 0 0 0-.98.7l-.31 1.06c-.38.22-.73.48-1.06.76l-1-.4a1 1 0 0 0-1.25.43l-1.5 2.6a1 1 0 0 0 .25 1.3l.86.67c-.07.43-.12.86-.16 1.3L3 12a1 1 0 0 0 0 1.8l.93.54c.04.44.09.87.16 1.3l-.86.67a1 1 0 0 0-.25 1.3l1.5 2.6a1 1 0 0 0 1.25.43l1-.4c.33.28.68.54 1.06.76l.31 1.06a1 1 0 0 0 .98.7h3a1 1 0 0 0 .98-.7l.31-1.06c.38-.22.73-.48 1.06-.76l1 .4a1 1 0 0 0 1.25-.43l1.5-2.6a1 1 0 0 0-.25-1.3l-.86-.67c.07-.43.12-.86.16-1.3L21 13.8a1 1 0 0 0 0-1.8Z',
+      shortcut: 'Alt+5'
+    }
+  ];
 
   readonly categories: ProductCategory[] = [
     'Aqua Probiotics',
@@ -108,11 +178,61 @@ export class AdminDashboardComponent {
   logoUploadProgressText = '';
   deletingMediaIdSet = new Set<string>();
 
-  readonly activeTabIndex = signal(0);
+  readonly activeView = signal<AdminView>('dashboard');
+  readonly mobileSidebarOpen = signal(false);
+  readonly profileMenuOpen = signal(false);
+  readonly notificationsOpen = signal(false);
+  readonly dashboardSearchQuery = signal('');
   readonly lastSavedAtSignal = signal<number | null>(null);
   readonly productSearchQuery = signal('');
   readonly productCategoryFilter = signal<ProductFilterCategory>('all');
   readonly mediaSearchQuery = signal('');
+
+  readonly adminUsers = signal<AdminUserRow[]>([
+    {
+      id: 'u-01',
+      name: 'Jerry Haxor',
+      email: 'jerry.haxor@goldenseallifesciences.com',
+      status: 'Active'
+    },
+    {
+      id: 'u-02',
+      name: 'Ananya Iyer',
+      email: 'ananya.iyer@goldenseallifesciences.com',
+      status: 'Active'
+    },
+    {
+      id: 'u-03',
+      name: 'Rahul Mehta',
+      email: 'rahul.mehta@goldenseallifesciences.com',
+      status: 'Pending'
+    },
+    {
+      id: 'u-04',
+      name: 'Priya Das',
+      email: 'priya.das@goldenseallifesciences.com',
+      status: 'Suspended'
+    }
+  ]);
+
+  readonly notifications = signal<AdminNotification[]>([
+    {
+      id: crypto.randomUUID(),
+      title: 'Cloud sync ready',
+      detail: 'Realtime Firestore sync is active for content, products, and media.',
+      createdAt: Date.now() - 90_000,
+      tone: 'info'
+    },
+    {
+      id: crypto.randomUUID(),
+      title: 'Security notice',
+      detail: 'Keyboard shortcuts enabled: Alt+1 to Alt+5 for view navigation.',
+      createdAt: Date.now() - 45_000,
+      tone: 'success'
+    }
+  ]);
+
+  readonly chartBarHeights = ['h-20', 'h-28', 'h-24', 'h-36', 'h-32', 'h-40', 'h-28'];
 
   readonly dashboardKpis = computed(() => {
     const content = this.publishedContent();
@@ -128,6 +248,97 @@ export class AdminDashboardComponent {
       announcementImageCount: content.announcement.imageItems.length
     };
   });
+
+  readonly activeViewMeta = computed(() => {
+    const selectedView = this.activeView();
+    return this.sidebarItems.find((item) => item.view === selectedView) || this.sidebarItems[0];
+  });
+
+  readonly dashboardStatCards = computed<DashboardStatCard[]>(() => {
+    const kpi = this.dashboardKpis();
+    return [
+      {
+        label: 'Total Users',
+        value: this.adminUsers().length.toString(),
+        trend: '+12% this month',
+        trendTone: 'positive'
+      },
+      {
+        label: 'Active Sessions',
+        value: Math.max(4, Math.round(kpi.productCount * 1.4)).toString(),
+        trend: '+8.6% this week',
+        trendTone: 'positive'
+      },
+      {
+        label: 'Catalog Items',
+        value: kpi.productCount.toString(),
+        trend: `${kpi.mediaCount} linked media assets`,
+        trendTone: 'neutral'
+      },
+      {
+        label: 'Reports',
+        value: Math.max(3, kpi.sectionCount + kpi.highlightCount).toString(),
+        trend: '1 pending approval',
+        trendTone: 'warning'
+      }
+    ];
+  });
+
+  readonly filteredAdminUsers = computed(() => {
+    const query = this.dashboardSearchQuery().trim().toLowerCase();
+    if (!query) {
+      return this.adminUsers();
+    }
+
+    return this.adminUsers().filter((user) => {
+      return (
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.status.toLowerCase().includes(query)
+      );
+    });
+  });
+
+  readonly activityFeed = computed<ActivityItem[]>(() => {
+    const feed: ActivityItem[] = [
+      {
+        id: 'activity-sync',
+        title: 'Realtime synchronization enabled',
+        description: 'All dashboard updates are persisted to Firestore collections.',
+        timeLabel: 'Live',
+        tone: 'info'
+      },
+      {
+        id: 'activity-products',
+        title: `${this.products().length} products currently managed`,
+        description: 'Use Products / Services to update catalog metadata and images.',
+        timeLabel: 'Today',
+        tone: 'success'
+      },
+      {
+        id: 'activity-media',
+        title: `${this.media().length} media assets in library`,
+        description: 'Media library supports reusable images for products and announcements.',
+        timeLabel: 'Today',
+        tone: 'info'
+      }
+    ];
+
+    const lastSavedAt = this.lastSavedAtSignal();
+    if (lastSavedAt) {
+      feed.unshift({
+        id: 'activity-save',
+        title: 'Configuration saved',
+        description: `Latest content commit completed at ${new Date(lastSavedAt).toLocaleTimeString()}.`,
+        timeLabel: 'Just now',
+        tone: 'success'
+      });
+    }
+
+    return feed.slice(0, 5);
+  });
+
+  readonly unreadNotificationsCount = computed(() => this.notifications().length);
 
   readonly filteredProducts = computed(() => {
     const query = this.productSearchQuery().trim().toLowerCase();
@@ -188,6 +399,85 @@ export class AdminDashboardComponent {
         this.productDraft.sectionId = this.contentDraft.sections[0]?.id || '';
       }
     });
+  }
+
+  setActiveView(view: AdminView): void {
+    this.activeView.set(view);
+    this.mobileSidebarOpen.set(false);
+    this.profileMenuOpen.set(false);
+  }
+
+  toggleMobileSidebar(): void {
+    this.mobileSidebarOpen.update((state) => !state);
+  }
+
+  closeMobileSidebar(): void {
+    this.mobileSidebarOpen.set(false);
+  }
+
+  toggleNotifications(): void {
+    this.notificationsOpen.update((state) => !state);
+    if (this.notificationsOpen()) {
+      this.profileMenuOpen.set(false);
+    }
+  }
+
+  toggleProfileMenu(): void {
+    this.profileMenuOpen.update((state) => !state);
+    if (this.profileMenuOpen()) {
+      this.notificationsOpen.set(false);
+    }
+  }
+
+  toggleDarkMode(): void {
+    this.uiPreferences.toggleDarkMode();
+  }
+
+  dismissNotification(notificationId: string): void {
+    this.notifications.update((items) => items.filter((item) => item.id !== notificationId));
+  }
+
+  editAdminUser(row: AdminUserRow): void {
+    this.notify(`Edit user action for ${row.name} is available as a placeholder.`, 'info');
+  }
+
+  deleteAdminUser(row: AdminUserRow): void {
+    this.adminUsers.update((users) => users.filter((user) => user.id !== row.id));
+    this.notify(`Removed ${row.name} from the dashboard table.`, 'warning');
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.mobileSidebarOpen.set(false);
+    this.profileMenuOpen.set(false);
+    this.notificationsOpen.set(false);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    const tag = target?.tagName || '';
+    const isTypingTarget = tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable;
+
+    if (!isTypingTarget && event.altKey && /^[1-5]$/.test(event.key)) {
+      const map: AdminView[] = ['dashboard', 'users', 'products', 'analytics', 'settings'];
+      const index = Number(event.key) - 1;
+      const nextView = map[index];
+      if (nextView) {
+        event.preventDefault();
+        this.setActiveView(nextView);
+      }
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      if (this.activeView() === 'settings') {
+        void this.saveContentAndSettings();
+      } else if (this.activeView() === 'products') {
+        void this.saveProduct();
+      }
+    }
   }
 
   async saveContentAndSettings(): Promise<void> {
@@ -589,8 +879,23 @@ export class AdminDashboardComponent {
     await this.router.navigateByUrl('/');
   }
 
+  getSidebarLogoUrl(): string {
+    return getBrandLogoUrl(this.settingsDraft.logoUrl, 'adminSidebar');
+  }
+
+  useSidebarLogoFallback(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+    if (!image) {
+      return;
+    }
+
+    image.src = this.sidebarLogoFallbackUrl;
+  }
+
   jumpToTab(index: number): void {
-    this.activeTabIndex.set(index);
+    const map: AdminView[] = ['settings', 'products', 'settings', 'settings', 'analytics'];
+    const nextView = map[index] || 'dashboard';
+    this.setActiveView(nextView);
   }
 
   resetProductFilters(): void {
@@ -754,9 +1059,10 @@ export class AdminDashboardComponent {
     this.lastSavedAtSignal.set(Date.now());
   }
 
-  private notify(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 2800
+  private notify(message: string, tone: ToastTone = 'info'): void {
+    this.toast.show({
+      message,
+      tone
     });
   }
 

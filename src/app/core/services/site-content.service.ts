@@ -30,6 +30,10 @@ import { FirebaseService } from './firebase.service';
 export class SiteContentService {
   private readonly firebase = inject(FirebaseService);
   private readonly unsubscribers: Array<() => void> = [];
+  private readonly pendingBootstrapKeys = new Set(['content', 'theme', 'settings', 'products', 'media']);
+  private bootstrapFallbackTimer: number | null = null;
+
+  private readonly loadingSignal = signal(true);
 
   private readonly snapshotSignal = signal<SiteSnapshot>({
     content: DEFAULT_HOME_CONTENT,
@@ -45,10 +49,20 @@ export class SiteContentService {
   readonly theme = computed(() => this.snapshotSignal().theme);
   readonly settings = computed(() => this.snapshotSignal().settings);
   readonly media = computed(() => this.snapshotSignal().media);
+  readonly isLoading = this.loadingSignal.asReadonly();
   readonly highlightedProducts = computed(() => this.products().filter((product) => product.highlighted));
 
   constructor() {
     this.startRealtimeSync();
+
+    if (!this.firebase.firestore) {
+      this.loadingSignal.set(false);
+      return;
+    }
+
+    this.bootstrapFallbackTimer = window.setTimeout(() => {
+      this.loadingSignal.set(false);
+    }, 4500);
   }
 
   async saveHomeContent(content: HomeContent): Promise<void> {
@@ -246,10 +260,12 @@ export class SiteContentService {
         if (!snapshot.exists()) {
           await setDoc(doc(db, 'site', 'content'), DEFAULT_HOME_CONTENT, { merge: true });
           this.patchSnapshot({ content: DEFAULT_HOME_CONTENT });
+          this.markBootstrapReady('content');
           return;
         }
 
         this.patchSnapshot({ content: this.normalizeHomeContent(snapshot.data() as HomeContent) });
+        this.markBootstrapReady('content');
       })
     );
 
@@ -258,10 +274,12 @@ export class SiteContentService {
         if (!snapshot.exists()) {
           await setDoc(doc(db, 'site', 'theme'), DEFAULT_THEME, { merge: true });
           this.patchSnapshot({ theme: DEFAULT_THEME });
+          this.markBootstrapReady('theme');
           return;
         }
 
         this.patchSnapshot({ theme: { ...DEFAULT_THEME, ...(snapshot.data() as SiteTheme) } });
+        this.markBootstrapReady('theme');
       })
     );
 
@@ -270,10 +288,12 @@ export class SiteContentService {
         if (!snapshot.exists()) {
           await setDoc(doc(db, 'site', 'settings'), DEFAULT_SETTINGS, { merge: true });
           this.patchSnapshot({ settings: DEFAULT_SETTINGS });
+          this.markBootstrapReady('settings');
           return;
         }
 
         this.patchSnapshot({ settings: this.normalizeSettings(snapshot.data() as SiteSettings) });
+        this.markBootstrapReady('settings');
       })
     );
 
@@ -282,6 +302,7 @@ export class SiteContentService {
         const products = snapshot.docs.map((docSnap) => docSnap.data() as Product);
         const sorted = products.sort((a, b) => b.updatedAt - a.updatedAt);
         this.patchSnapshot({ products: sorted });
+        this.markBootstrapReady('products');
       })
     );
 
@@ -290,8 +311,24 @@ export class SiteContentService {
         const mediaItems = snapshot.docs.map((docSnap) => docSnap.data() as MediaItem);
         const sorted = mediaItems.sort((a, b) => b.createdAt - a.createdAt);
         this.patchSnapshot({ media: sorted });
+        this.markBootstrapReady('media');
       })
     );
+  }
+
+  private markBootstrapReady(key: string): void {
+    this.pendingBootstrapKeys.delete(key);
+
+    if (this.pendingBootstrapKeys.size > 0) {
+      return;
+    }
+
+    this.loadingSignal.set(false);
+
+    if (this.bootstrapFallbackTimer !== null) {
+      window.clearTimeout(this.bootstrapFallbackTimer);
+      this.bootstrapFallbackTimer = null;
+    }
   }
 
   private patchSnapshot(patch: Partial<SiteSnapshot>): void {

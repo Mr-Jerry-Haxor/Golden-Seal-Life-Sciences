@@ -1,3 +1,14 @@
+@if (isLoading()) {
+  <section class="space-y-4" aria-label="Loading about page">
+    <div class="h-10 w-40 animate-pulse rounded-lg bg-slate-200/70 dark:bg-slate-800"></div>
+    <div class="h-14 w-full max-w-xl animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-800"></div>
+    <div class="space-y-3">
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="h-5 w-full animate-pulse rounded bg-slate-200/70 dark:bg-slate-800"></div>
+      }
+    </div>
+  </section>
+} @else {
 <section class="about-wrap">
   <p class="eyebrow">About Us</p>
   <h1>{{ settings().companyName }}</h1>
@@ -16,3 +27,4 @@
     </p>
   </article>
 </section>
+}

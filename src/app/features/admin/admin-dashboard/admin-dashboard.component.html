@@ -1,659 +1,1184 @@
-<section class="admin-wrap">
-  <header>
-    <div class="header-copy">
-      <p class="eyebrow">CMS Portal</p>
-      <h1>Golden Seal Admin</h1>
-      <p>Manage pages, products, announcements, media, and design settings from one dashboard.</p>
-    </div>
+<section class="relative p-2 sm:p-4">
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -top-28 right-[-8%] h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl dark:bg-emerald-500/20"></div>
+    <div class="absolute bottom-[-7rem] left-[-6rem] h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl dark:bg-cyan-500/20"></div>
+  </div>
 
-    <div class="header-actions">
-      <p class="save-status">{{ lastSavedLabel() }}</p>
-      <div class="header-buttons">
-        <button mat-flat-button color="primary" type="button" (click)="saveContentAndSettings()">Save All</button>
-        <button mat-stroked-button type="button" (click)="logout()">Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <section class="quick-nav">
-    <button mat-stroked-button type="button" (click)="jumpToTab(0)">Content</button>
-    <button mat-stroked-button type="button" (click)="jumpToTab(1)">Products</button>
-    <button mat-stroked-button type="button" (click)="jumpToTab(2)">Media</button>
-    <button mat-stroked-button type="button" (click)="jumpToTab(3)">Theme</button>
-    <button mat-stroked-button type="button" (click)="jumpToTab(4)">Analytics</button>
-  </section>
-
-  <section class="kpi-grid" aria-label="Admin overview">
-    <article>
-      <p>Products</p>
-      <strong>{{ dashboardKpis().productCount }}</strong>
-    </article>
-    <article>
-      <p>Media Assets</p>
-      <strong>{{ dashboardKpis().mediaCount }}</strong>
-    </article>
-    <article>
-      <p>Homepage Sections</p>
-      <strong>{{ dashboardKpis().sectionCount }}</strong>
-    </article>
-    <article>
-      <p>Highlights</p>
-      <strong>{{ dashboardKpis().highlightCount }}</strong>
-    </article>
-    <article>
-      <p>Announcement Texts</p>
-      <strong>{{ dashboardKpis().announcementTextCount }}</strong>
-    </article>
-    <article>
-      <p>Announcement Images</p>
-      <strong>{{ dashboardKpis().announcementImageCount }}</strong>
-    </article>
-  </section>
-
-  <mat-tab-group
-    class="admin-tabs"
-    dynamicHeight
-    [animationDuration]="'180ms'"
-    [disableRipple]="true"
-    [selectedIndex]="activeTabIndex()"
-    (selectedIndexChange)="activeTabIndex.set($event)"
+  <div
+    class="relative flex min-h-[calc(100vh-2rem)] overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/88 shadow-[0_30px_100px_-55px_rgba(15,23,42,0.6)] backdrop-blur-xl dark:border-slate-700/65 dark:bg-slate-950/80"
   >
-    <mat-tab label="Content">
-      <section class="tab-grid">
-        <mat-card>
-          <h3>Hero Content</h3>
-          <div class="form-grid two-up">
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Heading</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.heading" name="heroHeading" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Subheading</mat-label>
-              <textarea matInput rows="4" [(ngModel)]="contentDraft.hero.subheading" name="heroSubheading"></textarea>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Primary CTA Label</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.ctaPrimaryLabel" name="heroCtaPrimaryLabel" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Primary CTA Link</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.ctaPrimaryLink" name="heroCtaPrimaryLink" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Secondary CTA Label</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.ctaSecondaryLabel" name="heroCtaSecondaryLabel" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Secondary CTA Link</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.ctaSecondaryLink" name="heroCtaSecondaryLink" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Hero Background Image URL</mat-label>
-              <input matInput [(ngModel)]="contentDraft.hero.backgroundImageUrl" name="heroBackgroundImage" />
-            </mat-form-field>
+    @if (mobileSidebarOpen()) {
+      <button
+        type="button"
+        class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+        aria-label="Close navigation backdrop"
+        (click)="closeMobileSidebar()"
+      ></button>
+    }
+
+    <aside
+      class="admin-sidebar fixed inset-y-0 left-0 z-50 w-72 shrink-0 border-r border-slate-200/75 bg-white/92 px-4 py-5 dark:border-slate-800/70 dark:bg-slate-950/95 lg:static"
+      [ngClass]="mobileSidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
+      <div class="mb-6 rounded-2xl border border-emerald-200/70 bg-emerald-50/90 p-4 dark:border-emerald-500/40 dark:bg-emerald-500/10">
+        <img
+          class="mb-3 h-12 w-auto rounded-xl border border-emerald-200/70 bg-white/95 p-1 shadow-sm dark:border-emerald-500/40 dark:bg-slate-900"
+          [src]="getSidebarLogoUrl()"
+          alt="Golden Seal Life Sciences logo"
+          loading="lazy"
+          (error)="useSidebarLogoFallback($event)"
+        />
+        <p class="text-[0.67rem] font-semibold uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-300">Golden Seal</p>
+        <h2 class="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">Admin Workspace</h2>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Responsive SaaS control panel for content, catalog, analytics, and theme operations.</p>
+      </div>
+
+      <nav aria-label="Admin primary" class="space-y-2">
+        @for (item of sidebarItems; track item.view) {
+          <button
+            type="button"
+            class="flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition"
+            [attr.aria-current]="activeView() === item.view ? 'page' : null"
+            [ngClass]="
+              activeView() === item.view
+                ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/20 dark:border-emerald-300 dark:bg-emerald-300 dark:text-slate-950'
+                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900/70'
+            "
+            (click)="setActiveView(item.view)"
+          >
+            <span
+              class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+              [ngClass]="
+                activeView() === item.view
+                  ? 'bg-white/20 text-current dark:bg-slate-950/20'
+                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              "
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path [attr.d]="item.iconPath"></path>
+              </svg>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-semibold">{{ item.label }}</span>
+              <span class="block truncate text-xs opacity-80">{{ item.description }}</span>
+            </span>
+            <span
+              class="ml-auto hidden rounded-md px-2 py-0.5 text-[0.66rem] font-semibold tracking-wide lg:inline"
+              [ngClass]="activeView() === item.view ? 'bg-white/25 dark:bg-slate-950/30' : 'bg-slate-100 dark:bg-slate-800'"
+            >
+              {{ item.shortcut }}
+            </span>
+          </button>
+        }
+      </nav>
+
+      <div class="mt-6 space-y-3 rounded-2xl border border-slate-200/70 bg-slate-50/75 p-3 dark:border-slate-800/80 dark:bg-slate-900/70">
+        <p class="text-xs font-medium text-slate-600 dark:text-slate-300">Keyboard shortcuts</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Use Alt+1 through Alt+5 to navigate views and Ctrl/Cmd+S to save.</p>
+        <p class="truncate text-xs font-medium text-slate-700 dark:text-slate-200">{{ currentAdminEmail() || 'admin@goldenseal.local' }}</p>
+        <button type="button" class="soft-button w-full" (click)="logout()">Logout</button>
+      </div>
+    </aside>
+
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header
+        class="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 px-4 py-4 backdrop-blur-lg dark:border-slate-800/65 dark:bg-slate-950/80 sm:px-6 lg:px-8"
+      >
+        <div class="flex flex-wrap items-center gap-3 lg:gap-4">
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 lg:hidden"
+            aria-label="Toggle navigation"
+            (click)="toggleMobileSidebar()"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
+            </svg>
+          </button>
+
+          <div>
+            <p class="text-[0.67rem] font-semibold uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-300">Control Center</p>
+            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ activeViewMeta().label }}</h1>
+            <p class="text-sm text-slate-600 dark:text-slate-300">{{ activeViewMeta().description }}</p>
           </div>
-        </mat-card>
+        </div>
 
-        <mat-card>
-          <h3>Company Settings</h3>
+        <div class="mt-4 flex w-full flex-1 flex-wrap items-center justify-between gap-3">
+          <label class="relative w-full max-w-xl">
+            <span class="sr-only">Search dashboard users</span>
+            <input
+              type="search"
+              class="field-input pl-10"
+              [ngModel]="dashboardSearchQuery()"
+              (ngModelChange)="dashboardSearchQuery.set($event)"
+              name="dashboardSearchQuery"
+              placeholder="Search users by name, email, or status"
+            />
+            <svg
+              class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+            </svg>
+          </label>
 
-          <div class="logo-manager">
-            <img [src]="settingsDraft.logoUrl || fallbackLogoUrl" alt="Company logo preview" loading="lazy" />
-            <div class="logo-manager-fields">
-              <mat-form-field appearance="outline" class="span-2">
-                <mat-label>Logo URL</mat-label>
-                <input matInput [(ngModel)]="settingsDraft.logoUrl" name="companyLogoUrl" />
-              </mat-form-field>
-              <div class="logo-actions">
-                <label class="upload-pill" for="logo-upload-input">Upload logo</label>
-                <input
-                  id="logo-upload-input"
-                  type="file"
-                  accept="image/*"
-                  (change)="uploadCompanyLogo($event)"
-                />
-                <button mat-button type="button" (click)="clearCompanyLogo()">Reset to default</button>
-              </div>
-              @if (isUploadingLogo) {
-                <p class="helper-text">{{ logoUploadProgressText }}</p>
+          <div class="relative flex items-center gap-2">
+            <button type="button" class="soft-button relative" aria-label="Toggle notifications" (click)="toggleNotifications()">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M6 8a6 6 0 1 1 12 0v4.5l1.5 2.5H4.5L6 12.5V8Z" stroke-linejoin="round"></path>
+                <path d="M10 18a2 2 0 0 0 4 0" stroke-linecap="round"></path>
+              </svg>
+              @if (unreadNotificationsCount() > 0) {
+                <span
+                  class="absolute -right-1.5 -top-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[0.67rem] font-semibold text-white"
+                >
+                  {{ unreadNotificationsCount() }}
+                </span>
               }
-            </div>
-          </div>
+            </button>
 
-          <h4>Pick Logo From Media Library</h4>
-          <div class="media-mini-grid logo-picker">
-            @for (item of media(); track item.id) {
-              <article>
-                <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
-                <button mat-button type="button" (click)="useMediaAsCompanyLogo(item.downloadUrl)">Use as logo</button>
-              </article>
-            }
-          </div>
+            <button type="button" class="soft-button" aria-label="Toggle dark mode" (click)="toggleDarkMode()">
+              @if (isDarkMode()) {
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round"></path>
+                </svg>
+              } @else {
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>
+                </svg>
+              }
+            </button>
 
-          <div class="form-grid two-up">
-            <mat-form-field appearance="outline">
-              <mat-label>Company Name</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.companyName" name="companyName" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Tagline</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.companyTagline" name="companyTagline" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Company Story</mat-label>
-              <textarea matInput rows="6" [(ngModel)]="settingsDraft.companyStory" name="companyStory"></textarea>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Contact Email</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.contactEmail" name="contactEmail" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Contact Phone</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.contactPhone" name="contactPhone" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>WhatsApp Number</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.whatsappNumber" name="whatsappNumber" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Address</mat-label>
-              <input matInput [(ngModel)]="settingsDraft.address" name="address" />
-            </mat-form-field>
-          </div>
-        </mat-card>
+            <button type="button" class="primary-button hidden sm:inline-flex" (click)="saveContentAndSettings()">Save All</button>
 
-        <mat-card class="full-width">
-          <div class="card-head">
-            <h3>Hero Highlights</h3>
-            <button mat-stroked-button type="button" (click)="addHighlight()">+ Add Highlight</button>
-          </div>
-          <div class="stack-list">
-            @for (highlight of contentDraft.highlights; track $index; let index = $index) {
-              <article class="inline-editor">
-                <mat-form-field appearance="outline">
-                  <mat-label>Highlight {{ index + 1 }}</mat-label>
-                  <input matInput [(ngModel)]="contentDraft.highlights[index]" [name]="'highlight' + index" />
-                </mat-form-field>
-                <div class="row-actions">
-                  <button mat-button type="button" (click)="moveHighlight(index, -1)">Up</button>
-                  <button mat-button type="button" (click)="moveHighlight(index, 1)">Down</button>
-                  <button mat-button type="button" (click)="removeHighlight(index)">Delete</button>
-                </div>
-              </article>
-            }
-          </div>
-        </mat-card>
-
-        <mat-card class="full-width">
-          <div class="card-head">
-            <h3>Homepage Sections</h3>
-            <button mat-stroked-button type="button" (click)="addSection()">+ Add Section</button>
-          </div>
-          <div class="sections-grid">
-            @for (section of contentDraft.sections; track section.id; let index = $index) {
-              <article>
-                <div class="row-actions">
-                  <button mat-button type="button" (click)="moveSection(index, -1)">Up</button>
-                  <button mat-button type="button" (click)="moveSection(index, 1)">Down</button>
-                  <button mat-button type="button" (click)="removeSection(index)">Delete</button>
-                </div>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Section ID</mat-label>
-                  <input matInput [(ngModel)]="contentDraft.sections[index].id" [name]="'sectionId' + index" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Section Title</mat-label>
-                  <input matInput [(ngModel)]="contentDraft.sections[index].title" [name]="'sectionTitle' + index" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Section Summary</mat-label>
-                  <textarea
-                    matInput
-                    rows="3"
-                    [(ngModel)]="contentDraft.sections[index].summary"
-                    [name]="'sectionSummary' + index"
-                  ></textarea>
-                </mat-form-field>
-              </article>
-            }
-          </div>
-        </mat-card>
-
-        <mat-card class="full-width announcement-card">
-          <h3>Homepage Announcement Bar</h3>
-          <p class="helper-text">
-            Enable announcements and choose between scrolling text or image slideshow mode. All content is stored in
-            Firestore and images are uploaded to Cloudinary.
-          </p>
-
-          <mat-slide-toggle [(ngModel)]="contentDraft.announcement.enabled" name="announcementEnabled">
-            Enable announcement section on homepage
-          </mat-slide-toggle>
-
-          <div class="announcement-grid">
-            <mat-form-field appearance="outline">
-              <mat-label>Announcement Type</mat-label>
-              <mat-select
-                [(ngModel)]="contentDraft.announcement.mode"
-                name="announcementMode"
-                (ngModelChange)="setAnnouncementMode($event)"
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600"
+              aria-label="Toggle profile menu"
+              (click)="toggleProfileMenu()"
+            >
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 text-xs font-bold uppercase text-white"
               >
-                <mat-option value="text">Text-based scrolling announcements</mat-option>
-                <mat-option value="image">Image slideshow announcements</mat-option>
-              </mat-select>
-            </mat-form-field>
+                GS
+              </span>
+              <span class="hidden text-xs uppercase tracking-[0.16em] sm:inline">Account</span>
+            </button>
 
-            @if (contentDraft.announcement.mode === 'text') {
-              <mat-form-field appearance="outline">
-                <mat-label>Separator Icon</mat-label>
-                <mat-select [(ngModel)]="contentDraft.announcement.separator" name="announcementSeparator">
-                  @for (option of separatorOptions; track option.value) {
-                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            @if (notificationsOpen()) {
+              <section
+                class="absolute right-0 top-14 z-40 w-80 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-2xl dark:border-slate-700/80 dark:bg-slate-900"
+                aria-label="Notifications"
+              >
+                <div class="mb-2 flex items-center justify-between">
+                  <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Notifications</h2>
+                  <button type="button" class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" (click)="toggleNotifications()">
+                    Close
+                  </button>
+                </div>
+
+                <div class="max-h-72 space-y-2 overflow-y-auto pr-1">
+                  @for (notification of notifications(); track notification.id) {
+                    <article class="rounded-xl border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-700/70 dark:bg-slate-800/70">
+                      <div class="flex items-start justify-between gap-2">
+                        <div>
+                          <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ notification.title }}</p>
+                          <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">{{ notification.detail }}</p>
+                        </div>
+                        <button
+                          type="button"
+                          class="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                          (click)="dismissNotification(notification.id)"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </article>
                   }
-                </mat-select>
-              </mat-form-field>
 
-              <mat-form-field appearance="outline">
-                <mat-label>Scroll Duration (seconds)</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="10"
-                  max="90"
-                  [(ngModel)]="contentDraft.announcement.scrollSpeedSeconds"
-                  name="announcementScrollSpeed"
-                />
-              </mat-form-field>
+                  @if (notifications().length === 0) {
+                    <p class="rounded-xl border border-dashed border-slate-300 p-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      You're all caught up. No unread notifications.
+                    </p>
+                  }
+                </div>
+              </section>
             }
 
-            @if (contentDraft.announcement.mode === 'image') {
-              <mat-form-field appearance="outline">
-                <mat-label>Slide Interval (milliseconds)</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="2200"
-                  max="15000"
-                  step="100"
-                  [(ngModel)]="contentDraft.announcement.slideshowIntervalMs"
-                  name="announcementSlideInterval"
-                />
-              </mat-form-field>
-            }
-          </div>
-
-          @if (contentDraft.announcement.mode === 'text') {
-            <div class="card-head">
-              <h4>Text Announcements</h4>
-              <button mat-stroked-button type="button" (click)="addAnnouncementTextItem()">+ Add Text</button>
-            </div>
-
-            <div class="stack-list">
-              @for (textItem of contentDraft.announcement.textItems; track textItem.id; let index = $index) {
-                <article class="inline-editor">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Announcement {{ index + 1 }}</mat-label>
-                    <input
-                      matInput
-                      [(ngModel)]="contentDraft.announcement.textItems[index].text"
-                      [name]="'announcementText' + index"
-                    />
-                  </mat-form-field>
-                  <div class="row-actions">
-                    <button mat-button type="button" (click)="moveAnnouncementTextItem(index, -1)">Up</button>
-                    <button mat-button type="button" (click)="moveAnnouncementTextItem(index, 1)">Down</button>
-                    <button mat-button type="button" (click)="removeAnnouncementTextItem(index)">Delete</button>
-                  </div>
-                </article>
-              }
-            </div>
-          }
-
-          @if (contentDraft.announcement.mode === 'image') {
-            <div class="announcement-upload">
-              <label>Upload Announcement Images (multiple):</label>
-              <input type="file" accept="image/*" multiple (change)="uploadAnnouncementImages($event)" />
-              @if (isUploadingAnnouncementImages) {
-                <p class="helper-text">{{ announcementUploadProgressText }}</p>
-              }
-            </div>
-
-            <h4>Add From Media Library</h4>
-            <div class="media-mini-grid">
-              @for (item of media(); track item.id) {
-                <article>
-                  <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
-                  <button mat-button type="button" (click)="addMediaToAnnouncement(item.downloadUrl, item.name)">
-                    Add
-                  </button>
-                </article>
-              }
-            </div>
-
-            <h4>Slideshow Sequence</h4>
-            <div class="announcement-images-list">
-              @for (image of contentDraft.announcement.imageItems; track image.id; let index = $index) {
-                <article>
-                  <img [src]="image.imageUrl" [alt]="image.alt || 'Announcement image'" loading="lazy" />
-                  <div class="announcement-image-fields">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Image URL</mat-label>
-                      <input
-                        matInput
-                        [(ngModel)]="contentDraft.announcement.imageItems[index].imageUrl"
-                        [name]="'announcementImageUrl' + index"
-                      />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline">
-                      <mat-label>Caption</mat-label>
-                      <input
-                        matInput
-                        [(ngModel)]="contentDraft.announcement.imageItems[index].caption"
-                        [name]="'announcementImageCaption' + index"
-                      />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline">
-                      <mat-label>Alt Text</mat-label>
-                      <input
-                        matInput
-                        [(ngModel)]="contentDraft.announcement.imageItems[index].alt"
-                        [name]="'announcementImageAlt' + index"
-                      />
-                    </mat-form-field>
-                  </div>
-                  <div class="row-actions">
-                    <button mat-button type="button" (click)="moveAnnouncementImage(index, -1)">Up</button>
-                    <button mat-button type="button" (click)="moveAnnouncementImage(index, 1)">Down</button>
-                    <button mat-button type="button" (click)="removeAnnouncementImage(index)">Delete</button>
-                  </div>
-                </article>
-              }
-            </div>
-          }
-
-          <button mat-flat-button color="primary" type="button" (click)="saveContentOnly()">
-            Save Announcement & Homepage Content
-          </button>
-        </mat-card>
-
-        <mat-card class="full-width action-card">
-          <button mat-flat-button color="primary" type="button" (click)="saveContentAndSettings()">
-            Save All Content & Settings
-          </button>
-        </mat-card>
-      </section>
-    </mat-tab>
-
-    <mat-tab label="Products">
-      <section class="tab-grid products-grid">
-        <mat-card>
-          <div class="product-list-head">
-            <h3>Existing Products</h3>
-            <button mat-stroked-button type="button" (click)="prepareNewProduct()">+ New</button>
-          </div>
-
-          <div class="filters-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Search products</mat-label>
-              <input
-                matInput
-                [ngModel]="productSearchQuery()"
-                (ngModelChange)="productSearchQuery.set($event)"
-                name="productSearchQuery"
-                placeholder="Name, description, or tag"
-              />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Category</mat-label>
-              <mat-select
-                [ngModel]="productCategoryFilter()"
-                (ngModelChange)="productCategoryFilter.set($event)"
-                name="productCategoryFilter"
+            @if (profileMenuOpen()) {
+              <section
+                class="absolute right-0 top-14 z-40 w-64 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-2xl dark:border-slate-700/80 dark:bg-slate-900"
+                aria-label="Profile menu"
               >
-                <mat-option value="all">All categories</mat-option>
-                @for (category of categories; track category) {
-                  <mat-option [value]="category">{{ category }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <button mat-button type="button" (click)="resetProductFilters()">Clear</button>
-          </div>
-
-          <p class="helper-text">Showing {{ filteredProducts().length }} product(s)</p>
-
-          <div class="product-list">
-            @for (product of filteredProducts(); track product.id) {
-              <article>
-                <div>
-                  <h4>{{ product.name }}</h4>
-                  <p>{{ product.category }}</p>
+                <p class="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Signed in as</p>
+                <p class="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{{ currentAdminEmail() || 'admin@goldenseal.local' }}</p>
+                <div class="mt-3 space-y-2">
+                  <button type="button" class="soft-button w-full" (click)="setActiveView('settings')">Open Settings</button>
+                  <button type="button" class="danger-button w-full" (click)="logout()">Logout</button>
                 </div>
-                <div class="actions">
-                  <button mat-button type="button" (click)="editProduct(product)">Edit</button>
-                  <button mat-button type="button" (click)="deleteProduct(product.id)">Delete</button>
-                </div>
-              </article>
-            }
-
-            @if (filteredProducts().length === 0) {
-              <p class="empty-state">No products match your current filters.</p>
+              </section>
             }
           </div>
-        </mat-card>
+        </div>
+      </header>
 
-        <mat-card>
-          <h3>{{ selectedProductId ? 'Edit Product' : 'Create Product' }}</h3>
-
-          <div class="form-grid two-up">
-            <mat-form-field appearance="outline">
-              <mat-label>Name</mat-label>
-              <input matInput [(ngModel)]="productDraft.name" name="productName" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Category</mat-label>
-              <mat-select [(ngModel)]="productDraft.category" name="productCategory">
-                @for (category of categories; track category) {
-                  <mat-option [value]="category">{{ category }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Assign to Section</mat-label>
-              <mat-select [(ngModel)]="productDraft.sectionId" name="productSection">
-                @for (section of sectionOptions(); track section.id) {
-                  <mat-option [value]="section.id">{{ section.title }} ({{ section.id }})</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Short Description</mat-label>
-              <textarea matInput rows="3" [(ngModel)]="productDraft.shortDescription" name="productShortDesc"></textarea>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Detailed Description</mat-label>
-              <textarea matInput rows="6" [(ngModel)]="productDraft.longDescription" name="productLongDesc"></textarea>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Image URL</mat-label>
-              <input matInput [(ngModel)]="productDraft.imageUrl" name="productImageUrl" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="span-2">
-              <mat-label>Tags (comma separated)</mat-label>
-              <input matInput [(ngModel)]="productTagsInput" name="productTags" />
-            </mat-form-field>
-          </div>
-
-          <mat-slide-toggle [(ngModel)]="productDraft.highlighted" name="productHighlighted">
-            Highlight on homepage
-          </mat-slide-toggle>
-
-          <button mat-flat-button color="primary" type="button" (click)="saveProduct()">Save Product</button>
-        </mat-card>
-      </section>
-    </mat-tab>
-
-    <mat-tab label="Media">
-      <section class="tab-grid">
-        <mat-card>
-          <h3>Upload Image (Free Crop or Original)</h3>
-          <p class="helper-text">
-            Free crop supports any landscape or portrait frame. You can also skip cropping and upload the original image.
-          </p>
-          <input type="file" accept="image/*" (change)="onFileChange($event)" />
-
-          @if (imageChangedEvent) {
-            <mat-slide-toggle [(ngModel)]="maintainCropAspectRatio" name="maintainCropAspectRatio">
-              Lock crop aspect ratio (optional)
-            </mat-slide-toggle>
-
-            @if (maintainCropAspectRatio) {
-              <mat-form-field appearance="outline">
-                <mat-label>Aspect Ratio</mat-label>
-                <input matInput type="number" min="0.2" step="0.1" [(ngModel)]="cropAspectRatio" name="cropAspectRatio" />
-              </mat-form-field>
-            }
-
-            <image-cropper
-              [imageChangedEvent]="imageChangedEvent"
-              [maintainAspectRatio]="maintainCropAspectRatio"
-              [aspectRatio]="cropAspectRatio"
-              format="jpeg"
-              (imageCropped)="onImageCropped($event)"
-            ></image-cropper>
-
-            <div class="row-actions">
-              <button mat-flat-button color="primary" type="button" (click)="uploadCroppedImage()">Upload Cropped</button>
-              <button mat-stroked-button type="button" (click)="uploadOriginalImage()">Upload Original</button>
+      <main id="admin-main-content" class="admin-main-scroll flex-1 overflow-y-auto px-4 pb-8 pt-5 sm:px-6 lg:px-8">
+        @if (activeView() === 'dashboard') {
+          <section class="space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="text-[0.67rem] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Executive Snapshot</p>
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Realtime command center</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-300">{{ lastSavedLabel() }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="primary-button" (click)="saveContentAndSettings()">Save Workspace</button>
+                <button type="button" class="soft-button" (click)="setActiveView('settings')">Open Settings</button>
+              </div>
             </div>
-          }
-        </mat-card>
 
-        <mat-card class="full-width">
-          <h3>Media Library</h3>
+            @if (isLoading()) {
+              <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+                  <article class="panel-card space-y-3">
+                    <div class="h-3 w-20 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-8 w-16 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-3 w-28 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                @for (card of dashboardStatCards(); track card.label) {
+                  <article class="panel-card">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{{ card.label }}</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">{{ card.value }}</p>
+                    <p
+                      class="mt-2 text-xs font-semibold"
+                      [ngClass]="{
+                        'text-emerald-600 dark:text-emerald-300': card.trendTone === 'positive',
+                        'text-amber-600 dark:text-amber-300': card.trendTone === 'warning',
+                        'text-slate-500 dark:text-slate-300': card.trendTone === 'neutral'
+                      }"
+                    >
+                      {{ card.trend }}
+                    </p>
+                  </article>
+                }
+              </div>
+            }
 
-          <div class="filters-row media-filter-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Search media</mat-label>
-              <input
-                matInput
-                [ngModel]="mediaSearchQuery()"
-                (ngModelChange)="mediaSearchQuery.set($event)"
-                name="mediaSearchQuery"
-                placeholder="File name, hash, or URL"
-              />
-            </mat-form-field>
+            <div class="grid gap-6 xl:grid-cols-3">
+              <article class="panel-card xl:col-span-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Team Access Table</h3>
+                  <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    {{ filteredAdminUsers().length }} user(s)
+                  </span>
+                </div>
 
-            <button mat-button type="button" (click)="resetMediaFilters()">Clear</button>
-          </div>
+                <div class="mt-4 overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      <tr>
+                        <th class="pb-3 pr-3 font-semibold">Name</th>
+                        <th class="pb-3 pr-3 font-semibold">Email</th>
+                        <th class="pb-3 pr-3 font-semibold">Status</th>
+                        <th class="pb-3 text-right font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (user of filteredAdminUsers(); track user.id) {
+                        <tr class="border-t border-slate-200/75 dark:border-slate-700/80">
+                          <td class="py-3 pr-3 font-medium text-slate-900 dark:text-slate-100">{{ user.name }}</td>
+                          <td class="py-3 pr-3 text-slate-600 dark:text-slate-300">{{ user.email }}</td>
+                          <td class="py-3 pr-3">
+                            <span
+                              class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+                              [ngClass]="{
+                                'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300': user.status === 'Active',
+                                'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300': user.status === 'Pending',
+                                'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300': user.status === 'Suspended'
+                              }"
+                            >
+                              {{ user.status }}
+                            </span>
+                          </td>
+                          <td class="py-3 text-right">
+                            <div class="inline-flex gap-2">
+                              <button type="button" class="soft-button" (click)="editAdminUser(user)">Edit</button>
+                              <button type="button" class="danger-button" (click)="deleteAdminUser(user)">Remove</button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
 
-          <p class="helper-text">Showing {{ filteredMedia().length }} media item(s)</p>
-
-          <div class="media-grid">
-            @for (item of filteredMedia(); track item.id) {
-              <article>
-                <img [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
-                <div>
-                  <strong>{{ item.name }}</strong>
-                  <small>{{ item.hash.slice(0, 12) }}...</small>
-                  <button mat-button type="button" (click)="useMedia(item.downloadUrl)">Use in product draft</button>
-                  <button mat-button type="button" (click)="addMediaToAnnouncement(item.downloadUrl, item.name)">
-                    Use in announcement
-                  </button>
-                  <button
-                    mat-button
-                    type="button"
-                    [disabled]="isDeletingMedia(item.id)"
-                    (click)="deleteMedia(item)"
-                  >
-                    {{ isDeletingMedia(item.id) ? 'Deleting...' : 'Delete media' }}
-                  </button>
+                      @if (filteredAdminUsers().length === 0) {
+                        <tr>
+                          <td class="py-6 text-center text-sm text-slate-500 dark:text-slate-400" colspan="4">
+                            No users match the current search query.
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
               </article>
-            }
 
-            @if (filteredMedia().length === 0) {
-              <p class="empty-state">No media items match your current search.</p>
-            }
-          </div>
-        </mat-card>
-      </section>
-    </mat-tab>
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Activity Feed</h3>
+                <div class="mt-4 space-y-3">
+                  @for (item of activityFeed(); track item.id) {
+                    <article class="rounded-xl border border-slate-200/75 bg-slate-50/80 p-3 dark:border-slate-700/80 dark:bg-slate-800/70">
+                      <div class="flex items-start justify-between gap-3">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</p>
+                        <span
+                          class="mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[0.67rem] font-semibold"
+                          [ngClass]="{
+                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300': item.tone === 'success',
+                            'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300': item.tone === 'warning',
+                            'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300': item.tone === 'info'
+                          }"
+                        >
+                          {{ item.timeLabel }}
+                        </span>
+                      </div>
+                      <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">{{ item.description }}</p>
+                    </article>
+                  }
+                </div>
+              </article>
+            </div>
 
-    <mat-tab label="Theme">
-      <section class="tab-grid">
-        <mat-card class="theme-card">
-          <h3>Visual Theme Controls</h3>
-          <div class="color-grid">
-            <label>
-              Brand Primary
-              <input type="color" [(ngModel)]="themeDraft.brandPrimary" name="brandPrimary" />
-            </label>
-            <label>
-              Brand Secondary
-              <input type="color" [(ngModel)]="themeDraft.brandSecondary" name="brandSecondary" />
-            </label>
-            <label>
-              Accent
-              <input type="color" [(ngModel)]="themeDraft.accent" name="accent" />
-            </label>
-            <label>
-              Background Start
-              <input type="color" [(ngModel)]="themeDraft.backgroundStart" name="backgroundStart" />
-            </label>
-            <label>
-              Background End
-              <input type="color" [(ngModel)]="themeDraft.backgroundEnd" name="backgroundEnd" />
-            </label>
-            <label>
-              Surface
-              <input type="color" [(ngModel)]="themeDraft.surface" name="surface" />
-            </label>
-            <label>
-              Text Primary
-              <input type="color" [(ngModel)]="themeDraft.textPrimary" name="textPrimary" />
-            </label>
-            <label>
-              Text Muted
-              <input type="color" [(ngModel)]="themeDraft.textMuted" name="textMuted" />
-            </label>
-            <label>
-              Pointer Color
-              <input type="color" [(ngModel)]="themeDraft.pointerColor" name="pointerColor" />
-            </label>
-          </div>
-          <button mat-flat-button color="primary" type="button" (click)="saveTheme()">Save Theme</button>
-        </mat-card>
-      </section>
-    </mat-tab>
+            <div class="grid gap-6 xl:grid-cols-3">
+              <article class="panel-card xl:col-span-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Growth Trend Placeholder</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Replace with real chart integration when analytics backend is wired.</p>
+                </div>
 
-    <mat-tab label="Analytics">
-      <section class="tab-grid">
-        <mat-card>
-          <h3>Privacy and Data Collection</h3>
-          <p>
-            This project uses consent-based analytics. Visitors can opt in through the privacy banner. Anonymous event
-            metadata is stored in Firebase under <code>analytics_events</code>.
-          </p>
-          <p>
-            Contact details are only captured via explicit form submission with user consent and are stored in Firebase
-            under <code>leads</code>.
-          </p>
-          <p>
-            All tracking and communication flows are intentionally implemented for transparent and ethical compliance.
-          </p>
-        </mat-card>
-      </section>
-    </mat-tab>
-  </mat-tab-group>
+                <div class="mt-5 flex h-52 items-end gap-3">
+                  @for (heightClass of chartBarHeights; track $index) {
+                    <div class="flex w-full flex-col items-center gap-2">
+                      <div
+                        class="chart-bar w-full rounded-t-2xl bg-gradient-to-t from-emerald-500/75 to-cyan-400/75 dark:from-emerald-400/70 dark:to-cyan-300/70"
+                        [ngClass]="heightClass"
+                      ></div>
+                      <span class="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">W{{ $index + 1 }}</span>
+                    </div>
+                  }
+                </div>
+              </article>
+
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Content Health</h3>
+                <dl class="mt-4 space-y-2 text-sm">
+                  <div class="flex items-center justify-between">
+                    <dt class="text-slate-500 dark:text-slate-400">Sections</dt>
+                    <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().sectionCount }}</dd>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <dt class="text-slate-500 dark:text-slate-400">Highlights</dt>
+                    <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().highlightCount }}</dd>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <dt class="text-slate-500 dark:text-slate-400">Announcement Text</dt>
+                    <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().announcementTextCount }}</dd>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <dt class="text-slate-500 dark:text-slate-400">Announcement Images</dt>
+                    <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().announcementImageCount }}</dd>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <dt class="text-slate-500 dark:text-slate-400">Media Assets</dt>
+                    <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().mediaCount }}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
+          </section>
+        }
+
+        @if (activeView() === 'users') {
+          <section class="space-y-6">
+            <article class="panel-card">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">User Access Management</h2>
+                  <p class="text-sm text-slate-600 dark:text-slate-300">Manage active, pending, and suspended users from a single responsive table.</p>
+                </div>
+                <button type="button" class="primary-button" (click)="setActiveView('dashboard')">Back to Dashboard</button>
+              </div>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                    <tr>
+                      <th class="pb-3 pr-3 font-semibold">Name</th>
+                      <th class="pb-3 pr-3 font-semibold">Email</th>
+                      <th class="pb-3 pr-3 font-semibold">Status</th>
+                      <th class="pb-3 text-right font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of filteredAdminUsers(); track user.id) {
+                      <tr class="border-t border-slate-200/75 dark:border-slate-700/80">
+                        <td class="py-3 pr-3 font-medium text-slate-900 dark:text-slate-100">{{ user.name }}</td>
+                        <td class="py-3 pr-3 text-slate-600 dark:text-slate-300">{{ user.email }}</td>
+                        <td class="py-3 pr-3">
+                          <span
+                            class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+                            [ngClass]="{
+                              'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300': user.status === 'Active',
+                              'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300': user.status === 'Pending',
+                              'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300': user.status === 'Suspended'
+                            }"
+                          >
+                            {{ user.status }}
+                          </span>
+                        </td>
+                        <td class="py-3 text-right">
+                          <div class="inline-flex gap-2">
+                            <button type="button" class="soft-button" (click)="editAdminUser(user)">Edit</button>
+                            <button type="button" class="danger-button" (click)="deleteAdminUser(user)">Remove</button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+
+                    @if (filteredAdminUsers().length === 0) {
+                      <tr>
+                        <td class="py-6 text-center text-sm text-slate-500 dark:text-slate-400" colspan="4">
+                          No users found. Refine the search or clear the filter.
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <div class="grid gap-6 lg:grid-cols-2">
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Role Governance</h3>
+                <ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                  <li>Grant access only to audited company domains.</li>
+                  <li>Review pending users weekly before activation.</li>
+                  <li>Suspend dormant accounts after 90 days of inactivity.</li>
+                </ul>
+              </article>
+
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Security Notes</h3>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  The login session supports remember-me persistence, and sign-out clears local and session tokens.
+                </p>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Keyboard accessibility is available across admin views with focusable buttons and high-contrast states.
+                </p>
+              </article>
+            </div>
+          </section>
+        }
+
+        @if (activeView() === 'products') {
+          <section class="space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="text-[0.67rem] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Catalog Ops</p>
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Products and Media Workspace</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Maintain product metadata, sections, images, and category tags from one responsive editor.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="primary-button" (click)="saveProduct()">Save Product</button>
+                <button type="button" class="soft-button" (click)="prepareNewProduct()">New Draft</button>
+              </div>
+            </div>
+
+            <div class="grid gap-6 xl:grid-cols-2">
+              <article class="panel-card">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Product List</h3>
+                  <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    {{ filteredProducts().length }} item(s)
+                  </span>
+                </div>
+
+                <div class="mt-4 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                  <label class="field-label">
+                    Search
+                    <input
+                      class="field-input"
+                      type="search"
+                      [ngModel]="productSearchQuery()"
+                      (ngModelChange)="productSearchQuery.set($event)"
+                      name="productSearchQuery"
+                      placeholder="Name, description, or tag"
+                    />
+                  </label>
+
+                  <label class="field-label">
+                    Category
+                    <select
+                      class="field-select"
+                      [ngModel]="productCategoryFilter()"
+                      (ngModelChange)="productCategoryFilter.set($event)"
+                      name="productCategoryFilter"
+                    >
+                      <option value="all">All categories</option>
+                      @for (category of categories; track category) {
+                        <option [value]="category">{{ category }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <button type="button" class="soft-button" (click)="resetProductFilters()">Clear</button>
+                </div>
+
+                <div class="mt-4 space-y-3">
+                  @for (product of filteredProducts(); track product.id) {
+                    <article class="rounded-xl border border-slate-200/75 bg-slate-50/80 p-3 dark:border-slate-700/80 dark:bg-slate-800/70">
+                      <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h4 class="font-semibold text-slate-900 dark:text-slate-100">{{ product.name }}</h4>
+                          <p class="text-xs text-slate-500 dark:text-slate-400">{{ product.category }}</p>
+                          <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">{{ product.shortDescription }}</p>
+                        </div>
+                        <div class="inline-flex gap-2">
+                          <button type="button" class="soft-button" (click)="editProduct(product)">Edit</button>
+                          <button type="button" class="danger-button" (click)="deleteProduct(product.id)">Delete</button>
+                        </div>
+                      </div>
+                    </article>
+                  }
+
+                  @if (filteredProducts().length === 0) {
+                    <p class="rounded-xl border border-dashed border-slate-300/90 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      No products match the current filters.
+                    </p>
+                  }
+                </div>
+              </article>
+
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ selectedProductId ? 'Edit Product' : 'Create Product' }}</h3>
+
+                <div class="mt-4 grid gap-3 md:grid-cols-2">
+                  <label class="field-label">
+                    Product name
+                    <input class="field-input" [(ngModel)]="productDraft.name" name="productName" />
+                  </label>
+
+                  <label class="field-label">
+                    Category
+                    <select class="field-select" [(ngModel)]="productDraft.category" name="productCategory">
+                      @for (category of categories; track category) {
+                        <option [value]="category">{{ category }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label class="field-label md:col-span-2">
+                    Assign to section
+                    <select class="field-select" [(ngModel)]="productDraft.sectionId" name="productSection">
+                      @for (section of sectionOptions(); track section.id) {
+                        <option [value]="section.id">{{ section.title }} ({{ section.id }})</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label class="field-label md:col-span-2">
+                    Short description
+                    <textarea class="field-textarea" rows="3" [(ngModel)]="productDraft.shortDescription" name="productShortDescription"></textarea>
+                  </label>
+
+                  <label class="field-label md:col-span-2">
+                    Long description
+                    <textarea class="field-textarea" rows="5" [(ngModel)]="productDraft.longDescription" name="productLongDescription"></textarea>
+                  </label>
+
+                  <label class="field-label md:col-span-2">
+                    Image URL
+                    <input class="field-input" [(ngModel)]="productDraft.imageUrl" name="productImageUrl" />
+                  </label>
+
+                  <label class="field-label md:col-span-2">
+                    Tags (comma-separated)
+                    <input class="field-input" [(ngModel)]="productTagsInput" name="productTags" />
+                  </label>
+                </div>
+
+                <label class="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" [(ngModel)]="productDraft.highlighted" name="productHighlighted" />
+                  Highlight on homepage
+                </label>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button type="button" class="primary-button" (click)="saveProduct()">Save Product</button>
+                  <button type="button" class="soft-button" (click)="prepareNewProduct()">Reset Draft</button>
+                </div>
+              </article>
+            </div>
+
+            <div class="grid gap-6 xl:grid-cols-2">
+              <article class="panel-card">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Image Upload and Crop</h3>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Upload a source image, optionally crop, then attach it directly to the active product draft.
+                </p>
+
+                <div class="mt-4 space-y-3">
+                  <input type="file" accept="image/*" class="field-input" (change)="onFileChange($event)" />
+
+                  @if (imageChangedEvent) {
+                    <label class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                      <input
+                        type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        [(ngModel)]="maintainCropAspectRatio"
+                        name="maintainCropAspectRatio"
+                      />
+                      Maintain crop aspect ratio
+                    </label>
+
+                    @if (maintainCropAspectRatio) {
+                      <label class="field-label max-w-xs">
+                        Aspect ratio
+                        <input class="field-input" type="number" min="0.2" step="0.1" [(ngModel)]="cropAspectRatio" name="cropAspectRatio" />
+                      </label>
+                    }
+
+                    <image-cropper
+                      [imageChangedEvent]="imageChangedEvent"
+                      [maintainAspectRatio]="maintainCropAspectRatio"
+                      [aspectRatio]="cropAspectRatio"
+                      format="jpeg"
+                      (imageCropped)="onImageCropped($event)"
+                    ></image-cropper>
+
+                    <div class="flex flex-wrap gap-2">
+                      <button type="button" class="primary-button" (click)="uploadCroppedImage()">Upload Cropped</button>
+                      <button type="button" class="soft-button" (click)="uploadOriginalImage()">Upload Original</button>
+                    </div>
+                  }
+                </div>
+              </article>
+
+              <article class="panel-card">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Media Library</h3>
+                  <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    {{ filteredMedia().length }} item(s)
+                  </span>
+                </div>
+
+                <div class="mt-3 flex flex-wrap items-end gap-2">
+                  <label class="field-label min-w-[14rem] flex-1">
+                    Search media
+                    <input
+                      class="field-input"
+                      type="search"
+                      [ngModel]="mediaSearchQuery()"
+                      (ngModelChange)="mediaSearchQuery.set($event)"
+                      name="mediaSearchQuery"
+                      placeholder="File name, hash, or URL"
+                    />
+                  </label>
+                  <button type="button" class="soft-button" (click)="resetMediaFilters()">Clear</button>
+                </div>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                  @for (item of filteredMedia(); track item.id) {
+                    <article class="rounded-xl border border-slate-200/75 bg-slate-50/80 p-3 dark:border-slate-700/80 dark:bg-slate-800/70">
+                      <img class="h-28 w-full rounded-lg object-cover" [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                      <p class="mt-2 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{{ item.name }}</p>
+                      <p class="text-[0.7rem] text-slate-500 dark:text-slate-400">{{ item.hash.slice(0, 14) }}...</p>
+                      <div class="mt-2 grid gap-2">
+                        <button type="button" class="soft-button" (click)="useMedia(item.downloadUrl)">Use in product</button>
+                        <button type="button" class="soft-button" (click)="addMediaToAnnouncement(item.downloadUrl, item.name)">Use in announcement</button>
+                        <button
+                          type="button"
+                          class="danger-button"
+                          [disabled]="isDeletingMedia(item.id)"
+                          (click)="deleteMedia(item)"
+                        >
+                          {{ isDeletingMedia(item.id) ? 'Deleting...' : 'Delete media' }}
+                        </button>
+                      </div>
+                    </article>
+                  }
+
+                  @if (filteredMedia().length === 0) {
+                    <p class="rounded-xl border border-dashed border-slate-300/90 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:col-span-2">
+                      No media items match your current search.
+                    </p>
+                  }
+                </div>
+              </article>
+            </div>
+          </section>
+        }
+
+        @if (activeView() === 'analytics') {
+          <section class="space-y-6">
+            <article class="panel-card">
+              <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Analytics and Compliance</h2>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                This workspace uses consent-based analytics. Visitors opt in through the privacy banner, and anonymous
+                event metadata is stored under analytics events.
+              </p>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Contact submissions are saved only after explicit consent and are stored in the leads collection.
+              </p>
+            </article>
+
+            <div class="grid gap-6 lg:grid-cols-3">
+              <article class="panel-card">
+                <p class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Product Coverage</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().productCount }}</p>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Catalog items in active management.</p>
+              </article>
+
+              <article class="panel-card">
+                <p class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Media Assets</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900 dark:text-slate-100">{{ dashboardKpis().mediaCount }}</p>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Cloud-ready assets available for reuse.</p>
+              </article>
+
+              <article class="panel-card">
+                <p class="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Live Notifications</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900 dark:text-slate-100">{{ unreadNotificationsCount() }}</p>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Unread platform notices.</p>
+              </article>
+            </div>
+
+            <article class="panel-card">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Trend Preview</h3>
+              <div class="mt-4 flex h-52 items-end gap-3">
+                @for (heightClass of chartBarHeights; track $index) {
+                  <div class="flex w-full flex-col items-center gap-2">
+                    <div
+                      class="chart-bar w-full rounded-t-2xl bg-gradient-to-t from-cyan-500/75 to-blue-400/75 dark:from-cyan-400/75 dark:to-blue-300/75"
+                      [ngClass]="heightClass"
+                    ></div>
+                    <span class="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">M{{ $index + 1 }}</span>
+                  </div>
+                }
+              </div>
+            </article>
+          </section>
+        }
+
+        @if (activeView() === 'settings') {
+          <section class="space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="text-[0.67rem] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Site Configuration</p>
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Content, Announcement, and Theme Controls</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Update homepage copy, branding, contact details, and design tokens.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="primary-button" (click)="saveContentAndSettings()">Save All</button>
+                <button type="button" class="soft-button" (click)="saveContentOnly()">Save Content</button>
+                <button type="button" class="soft-button" (click)="saveTheme()">Save Theme</button>
+              </div>
+            </div>
+
+            <div class="grid gap-6 2xl:grid-cols-12">
+              <article class="panel-card space-y-6 2xl:col-span-7">
+                <section class="space-y-4">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Hero Content</h3>
+                  <div class="grid gap-3 md:grid-cols-2">
+                    <label class="field-label md:col-span-2">
+                      Heading
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.heading" name="heroHeading" />
+                    </label>
+                    <label class="field-label md:col-span-2">
+                      Subheading
+                      <textarea class="field-textarea" rows="4" [(ngModel)]="contentDraft.hero.subheading" name="heroSubheading"></textarea>
+                    </label>
+                    <label class="field-label">
+                      Primary CTA label
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.ctaPrimaryLabel" name="heroCtaPrimaryLabel" />
+                    </label>
+                    <label class="field-label">
+                      Primary CTA link
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.ctaPrimaryLink" name="heroCtaPrimaryLink" />
+                    </label>
+                    <label class="field-label">
+                      Secondary CTA label
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.ctaSecondaryLabel" name="heroCtaSecondaryLabel" />
+                    </label>
+                    <label class="field-label">
+                      Secondary CTA link
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.ctaSecondaryLink" name="heroCtaSecondaryLink" />
+                    </label>
+                    <label class="field-label md:col-span-2">
+                      Hero background image URL
+                      <input class="field-input" [(ngModel)]="contentDraft.hero.backgroundImageUrl" name="heroBackgroundImageUrl" />
+                    </label>
+                  </div>
+                </section>
+
+                <section class="space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlights</h3>
+                    <button type="button" class="soft-button" (click)="addHighlight()">Add Highlight</button>
+                  </div>
+
+                  @for (highlight of contentDraft.highlights; track $index; let index = $index) {
+                    <article class="rounded-xl border border-slate-200/75 bg-slate-50/70 p-3 dark:border-slate-700/75 dark:bg-slate-800/70">
+                      <label class="field-label">
+                        Highlight {{ index + 1 }}
+                        <input class="field-input" [(ngModel)]="contentDraft.highlights[index]" [name]="'highlight-' + index" />
+                      </label>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="soft-button" (click)="moveHighlight(index, -1)">Up</button>
+                        <button type="button" class="soft-button" (click)="moveHighlight(index, 1)">Down</button>
+                        <button type="button" class="danger-button" (click)="removeHighlight(index)">Delete</button>
+                      </div>
+                    </article>
+                  }
+                </section>
+
+                <section class="space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Homepage Sections</h3>
+                    <button type="button" class="soft-button" (click)="addSection()">Add Section</button>
+                  </div>
+
+                  <div class="grid gap-3 md:grid-cols-2">
+                    @for (section of contentDraft.sections; track section.id; let index = $index) {
+                      <article class="rounded-xl border border-slate-200/75 bg-slate-50/70 p-3 dark:border-slate-700/75 dark:bg-slate-800/70">
+                        <div class="space-y-3">
+                          <label class="field-label">
+                            Section ID
+                            <input class="field-input" [(ngModel)]="contentDraft.sections[index].id" [name]="'section-id-' + index" />
+                          </label>
+                          <label class="field-label">
+                            Section title
+                            <input class="field-input" [(ngModel)]="contentDraft.sections[index].title" [name]="'section-title-' + index" />
+                          </label>
+                          <label class="field-label">
+                            Section summary
+                            <textarea
+                              class="field-textarea"
+                              rows="3"
+                              [(ngModel)]="contentDraft.sections[index].summary"
+                              [name]="'section-summary-' + index"
+                            ></textarea>
+                          </label>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                          <button type="button" class="soft-button" (click)="moveSection(index, -1)">Up</button>
+                          <button type="button" class="soft-button" (click)="moveSection(index, 1)">Down</button>
+                          <button type="button" class="danger-button" (click)="removeSection(index)">Delete</button>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                </section>
+              </article>
+
+              <div class="space-y-6 2xl:col-span-5">
+                <article class="panel-card space-y-4">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Company Profile Settings</h3>
+
+                  <div class="grid gap-3 md:grid-cols-[9rem_1fr] md:items-start">
+                    <img
+                      class="h-32 w-32 rounded-2xl border border-slate-200 object-cover dark:border-slate-700"
+                      [src]="settingsDraft.logoUrl || fallbackLogoUrl"
+                      alt="Company logo preview"
+                      loading="lazy"
+                    />
+                    <div class="space-y-3">
+                      <label class="field-label">
+                        Logo URL
+                        <input class="field-input" [(ngModel)]="settingsDraft.logoUrl" name="settingsLogoUrl" />
+                      </label>
+                      <div class="flex flex-wrap gap-2">
+                        <label class="soft-button cursor-pointer" for="company-logo-upload">Upload logo</label>
+                        <input id="company-logo-upload" type="file" accept="image/*" class="hidden" (change)="uploadCompanyLogo($event)" />
+                        <button type="button" class="soft-button" (click)="clearCompanyLogo()">Reset logo</button>
+                      </div>
+                      @if (isUploadingLogo) {
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ logoUploadProgressText }}</p>
+                      }
+                    </div>
+                  </div>
+
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Pick logo from media</p>
+                    <div class="mt-2 grid grid-cols-3 gap-2">
+                      @for (item of media().slice(0, 6); track item.id) {
+                        <button
+                          type="button"
+                          class="overflow-hidden rounded-xl border border-slate-200 transition hover:border-emerald-300 dark:border-slate-700 dark:hover:border-emerald-400"
+                          (click)="useMediaAsCompanyLogo(item.downloadUrl)"
+                        >
+                          <img class="h-16 w-full object-cover" [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="grid gap-3 md:grid-cols-2">
+                    <label class="field-label">
+                      Company name
+                      <input class="field-input" [(ngModel)]="settingsDraft.companyName" name="settingsCompanyName" />
+                    </label>
+                    <label class="field-label">
+                      Tagline
+                      <input class="field-input" [(ngModel)]="settingsDraft.companyTagline" name="settingsCompanyTagline" />
+                    </label>
+                    <label class="field-label md:col-span-2">
+                      Story
+                      <textarea class="field-textarea" rows="4" [(ngModel)]="settingsDraft.companyStory" name="settingsCompanyStory"></textarea>
+                    </label>
+                    <label class="field-label">
+                      Contact email
+                      <input class="field-input" [(ngModel)]="settingsDraft.contactEmail" name="settingsContactEmail" />
+                    </label>
+                    <label class="field-label">
+                      Contact phone
+                      <input class="field-input" [(ngModel)]="settingsDraft.contactPhone" name="settingsContactPhone" />
+                    </label>
+                    <label class="field-label">
+                      WhatsApp
+                      <input class="field-input" [(ngModel)]="settingsDraft.whatsappNumber" name="settingsWhatsappNumber" />
+                    </label>
+                    <label class="field-label">
+                      Address
+                      <input class="field-input" [(ngModel)]="settingsDraft.address" name="settingsAddress" />
+                    </label>
+                  </div>
+                </article>
+
+                <article class="panel-card space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Announcement Manager</h3>
+                    <button type="button" class="soft-button" (click)="saveContentOnly()">Save announcement</button>
+                  </div>
+
+                  <label class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <input
+                      type="checkbox"
+                      class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      [(ngModel)]="contentDraft.announcement.enabled"
+                      name="announcementEnabled"
+                    />
+                    Enable homepage announcement
+                  </label>
+
+                  <div class="grid gap-3 md:grid-cols-2">
+                    <label class="field-label">
+                      Announcement mode
+                      <select
+                        class="field-select"
+                        [(ngModel)]="contentDraft.announcement.mode"
+                        name="announcementMode"
+                        (ngModelChange)="setAnnouncementMode($event)"
+                      >
+                        <option value="text">Text ticker</option>
+                        <option value="image">Image slideshow</option>
+                      </select>
+                    </label>
+
+                    @if (contentDraft.announcement.mode === 'text') {
+                      <label class="field-label">
+                        Separator
+                        <select class="field-select" [(ngModel)]="contentDraft.announcement.separator" name="announcementSeparator">
+                          @for (option of separatorOptions; track option.value) {
+                            <option [value]="option.value">{{ option.label }}</option>
+                          }
+                        </select>
+                      </label>
+
+                      <label class="field-label">
+                        Scroll speed (seconds)
+                        <input
+                          class="field-input"
+                          type="number"
+                          min="10"
+                          max="90"
+                          [(ngModel)]="contentDraft.announcement.scrollSpeedSeconds"
+                          name="announcementScrollSpeed"
+                        />
+                      </label>
+                    }
+
+                    @if (contentDraft.announcement.mode === 'image') {
+                      <label class="field-label">
+                        Slide interval (ms)
+                        <input
+                          class="field-input"
+                          type="number"
+                          min="2200"
+                          max="15000"
+                          step="100"
+                          [(ngModel)]="contentDraft.announcement.slideshowIntervalMs"
+                          name="announcementSlideInterval"
+                        />
+                      </label>
+                    }
+                  </div>
+
+                  @if (contentDraft.announcement.mode === 'text') {
+                    <div class="space-y-3 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/70">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Text announcements</p>
+                        <button type="button" class="soft-button" (click)="addAnnouncementTextItem()">Add text</button>
+                      </div>
+
+                      @for (textItem of contentDraft.announcement.textItems; track textItem.id; let index = $index) {
+                        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-3 dark:border-slate-700/70 dark:bg-slate-900/70">
+                          <label class="field-label">
+                            Message {{ index + 1 }}
+                            <input
+                              class="field-input"
+                              [(ngModel)]="contentDraft.announcement.textItems[index].text"
+                              [name]="'announcement-text-' + index"
+                            />
+                          </label>
+                          <div class="mt-2 flex flex-wrap gap-2">
+                            <button type="button" class="soft-button" (click)="moveAnnouncementTextItem(index, -1)">Up</button>
+                            <button type="button" class="soft-button" (click)="moveAnnouncementTextItem(index, 1)">Down</button>
+                            <button type="button" class="danger-button" (click)="removeAnnouncementTextItem(index)">Delete</button>
+                          </div>
+                        </article>
+                      }
+                    </div>
+                  }
+
+                  @if (contentDraft.announcement.mode === 'image') {
+                    <div class="space-y-3 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/70">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <label class="soft-button cursor-pointer" for="announcement-images-upload">Upload images</label>
+                        <input
+                          id="announcement-images-upload"
+                          type="file"
+                          class="hidden"
+                          accept="image/*"
+                          multiple
+                          (change)="uploadAnnouncementImages($event)"
+                        />
+                        @if (isUploadingAnnouncementImages) {
+                          <span class="text-xs text-slate-500 dark:text-slate-400">{{ announcementUploadProgressText }}</span>
+                        }
+                      </div>
+
+                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Add from media library</p>
+                      <div class="grid grid-cols-3 gap-2">
+                        @for (item of media().slice(0, 9); track item.id) {
+                          <button
+                            type="button"
+                            class="overflow-hidden rounded-xl border border-slate-200 transition hover:border-emerald-300 dark:border-slate-700 dark:hover:border-emerald-400"
+                            (click)="addMediaToAnnouncement(item.downloadUrl, item.name)"
+                          >
+                            <img class="h-16 w-full object-cover" [src]="item.downloadUrl" [alt]="item.name" loading="lazy" />
+                          </button>
+                        }
+                      </div>
+
+                      <div class="space-y-3">
+                        @for (image of contentDraft.announcement.imageItems; track image.id; let index = $index) {
+                          <article class="rounded-xl border border-slate-200/70 bg-white/90 p-3 dark:border-slate-700/70 dark:bg-slate-900/70">
+                            <img class="h-32 w-full rounded-lg object-cover" [src]="image.imageUrl" [alt]="image.alt || 'Announcement image'" loading="lazy" />
+                            <div class="mt-3 grid gap-2">
+                              <label class="field-label">
+                                Image URL
+                                <input
+                                  class="field-input"
+                                  [(ngModel)]="contentDraft.announcement.imageItems[index].imageUrl"
+                                  [name]="'announcement-image-url-' + index"
+                                />
+                              </label>
+                              <label class="field-label">
+                                Caption
+                                <input
+                                  class="field-input"
+                                  [(ngModel)]="contentDraft.announcement.imageItems[index].caption"
+                                  [name]="'announcement-image-caption-' + index"
+                                />
+                              </label>
+                              <label class="field-label">
+                                Alt text
+                                <input
+                                  class="field-input"
+                                  [(ngModel)]="contentDraft.announcement.imageItems[index].alt"
+                                  [name]="'announcement-image-alt-' + index"
+                                />
+                              </label>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                              <button type="button" class="soft-button" (click)="moveAnnouncementImage(index, -1)">Up</button>
+                              <button type="button" class="soft-button" (click)="moveAnnouncementImage(index, 1)">Down</button>
+                              <button type="button" class="danger-button" (click)="removeAnnouncementImage(index)">Delete</button>
+                            </div>
+                          </article>
+                        }
+                      </div>
+                    </div>
+                  }
+                </article>
+
+                <article class="panel-card space-y-4">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Theme Controls</h3>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="field-label">
+                      Brand primary
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.brandPrimary" name="themeBrandPrimary" />
+                    </label>
+                    <label class="field-label">
+                      Brand secondary
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.brandSecondary" name="themeBrandSecondary" />
+                    </label>
+                    <label class="field-label">
+                      Accent
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.accent" name="themeAccent" />
+                    </label>
+                    <label class="field-label">
+                      Background start
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.backgroundStart" name="themeBackgroundStart" />
+                    </label>
+                    <label class="field-label">
+                      Background end
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.backgroundEnd" name="themeBackgroundEnd" />
+                    </label>
+                    <label class="field-label">
+                      Surface
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.surface" name="themeSurface" />
+                    </label>
+                    <label class="field-label">
+                      Text primary
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.textPrimary" name="themeTextPrimary" />
+                    </label>
+                    <label class="field-label">
+                      Text muted
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.textMuted" name="themeTextMuted" />
+                    </label>
+                    <label class="field-label sm:col-span-2">
+                      Pointer color
+                      <input class="field-input h-11" type="color" [(ngModel)]="themeDraft.pointerColor" name="themePointerColor" />
+                    </label>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" class="primary-button" (click)="saveTheme()">Save Theme</button>
+                    <button type="button" class="soft-button" (click)="saveContentAndSettings()">Save Everything</button>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        }
+      </main>
+    </div>
+  </div>
 </section>

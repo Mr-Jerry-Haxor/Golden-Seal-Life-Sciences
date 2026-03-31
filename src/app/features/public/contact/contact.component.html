@@ -1,3 +1,12 @@
+@if (isLoading()) {
+  <section class="grid gap-6 lg:grid-cols-2" aria-label="Loading contact content">
+    <div class="space-y-3">
+      <div class="h-8 w-44 animate-pulse rounded-lg bg-slate-200/70 dark:bg-slate-800"></div>
+      <div class="h-24 w-full animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800"></div>
+    </div>
+    <div class="h-[520px] animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800"></div>
+  </section>
+} @else {
 <section class="contact-wrap">
   <div>
     <p class="eyebrow">Connect With Us</p>
@@ -59,3 +68,4 @@
     </button>
   </form>
 </section>
+}

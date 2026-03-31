@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --brand-primary: #0a2540;
+  --brand-secondary: #2ecc71;
+  --brand-accent: #6ee7a2;
+  --bg-start: #f8fafc;
+  --bg-end: #ffffff;
+  --surface: #ffffff;
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --pointer-color: #2ecc71;
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--brand-secondary) 15%, transparent 85%), transparent 44%),
+    radial-gradient(circle at 86% 82%, color-mix(in srgb, var(--brand-primary) 11%, transparent 89%), transparent 46%),
+    linear-gradient(150deg, var(--bg-start), var(--bg-end));
+  background-attachment: fixed;
+  transition: background 220ms ease, color 220ms ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+.mat-mdc-card {
+  border-radius: 1rem;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand-secondary) 35%, #ffffff 65%);
+  color: var(--text-primary);
+}

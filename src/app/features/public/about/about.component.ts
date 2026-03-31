@@ -12,5 +12,6 @@ import { SiteContentService } from '../../../core/services/site-content.service'
 export class AboutComponent {
   private readonly siteContent = inject(SiteContentService);
 
+  readonly isLoading = this.siteContent.isLoading;
   readonly settings = this.siteContent.settings;
 }

@@ -1,4 +1,14 @@
-@if (product(); as item) {
+@if (isLoading()) {
+  <section class="grid gap-6 lg:grid-cols-2" aria-label="Loading product detail">
+    <div class="h-80 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800"></div>
+    <div class="space-y-4">
+      <div class="h-8 w-56 animate-pulse rounded-lg bg-slate-200/70 dark:bg-slate-800"></div>
+      <div class="h-6 w-full animate-pulse rounded bg-slate-200/70 dark:bg-slate-800"></div>
+      <div class="h-6 w-full animate-pulse rounded bg-slate-200/70 dark:bg-slate-800"></div>
+      <div class="h-6 w-3/4 animate-pulse rounded bg-slate-200/70 dark:bg-slate-800"></div>
+    </div>
+  </section>
+} @else if (product(); as item) {
   <article class="product-detail">
     <img
       [src]="item.imageUrl || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=60'"
@@ -19,13 +29,23 @@
         </div>
       }
 
-      <a mat-flat-button color="primary" routerLink="/contact">Request Consultation</a>
+      <a
+        routerLink="/contact"
+        class="inline-flex items-center justify-center rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+      >
+        Request Consultation
+      </a>
     </div>
   </article>
 } @else {
   <section class="missing">
     <h2>Product not found</h2>
     <p>The product may have been moved or is not published.</p>
-    <a mat-stroked-button routerLink="/products">Back to Products</a>
+    <a
+      routerLink="/products"
+      class="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      Back to Products
+    </a>
   </section>
 }
