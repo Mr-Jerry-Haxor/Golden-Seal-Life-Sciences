@@ -17,8 +17,14 @@
     </p>
 
     <ul>
-      <li>Email: {{ settings().contactEmail }}</li>
-      <li>Phone: {{ settings().contactPhone }}</li>
+      <li>
+        Email:
+        <a [href]="contactEmailHref()">{{ settings().contactEmail }}</a>
+      </li>
+      <li>
+        Phone:
+        <a [href]="contactPhoneHref()">{{ settings().contactPhone }}</a>
+      </li>
       <li>WhatsApp: {{ settings().whatsappNumber }}</li>
       <li>Address: {{ settings().address }}</li>
     </ul>

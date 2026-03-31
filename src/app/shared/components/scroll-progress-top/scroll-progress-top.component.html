@@ -1,0 +1,28 @@
+@if (isScrollable()) {
+  <button
+    type="button"
+    class="scroll-progress-btn"
+    (click)="scrollToTop()"
+    [attr.title]="'Scroll progress: ' + progress().toFixed(0) + '%'"
+    [attr.aria-label]="'Back to top. Scroll progress ' + progress().toFixed(0) + '%'"
+  >
+    <svg class="progress-ring" viewBox="0 0 48 48" aria-hidden="true">
+      <circle class="progress-track" cx="24" cy="24" [attr.r]="radius"></circle>
+      <circle
+        class="progress-value"
+        cx="24"
+        cy="24"
+        [attr.r]="radius"
+        [attr.stroke-dasharray]="circumference"
+        [attr.stroke-dashoffset]="dashOffset()"
+      ></circle>
+    </svg>
+
+    <span class="arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 17V7"></path>
+        <path d="M7.5 11.5 12 7l4.5 4.5"></path>
+      </svg>
+    </span>
+  </button>
+}

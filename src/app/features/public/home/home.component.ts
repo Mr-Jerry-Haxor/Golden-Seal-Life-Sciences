@@ -156,7 +156,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     const fallbackImages = [
       'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1628359355624-855775b5c9c4?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1766297246906-210617be31a4?auto=format&fit=crop&w=1200&q=80'
     ];
 
     if (sortedProducts.length === 0) {

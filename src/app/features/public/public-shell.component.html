@@ -13,15 +13,36 @@
       </span>
     </a>
 
-    <button
-      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 lg:hidden"
-      type="button"
-      (click)="toggleMobileNav()"
-      [attr.aria-expanded]="mobileNavOpen()"
-      aria-controls="public-main-nav-mobile"
-    >
-      {{ mobileNavOpen() ? 'Close' : 'Menu' }}
-    </button>
+    <div class="flex items-center gap-2 lg:hidden">
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        (click)="toggleDarkMode()"
+        [attr.aria-pressed]="isDarkMode()"
+        [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        @if (isDarkMode()) {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round"></path>
+          </svg>
+        } @else {
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>
+          </svg>
+        }
+      </button>
+
+      <button
+        class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        type="button"
+        (click)="toggleMobileNav()"
+        [attr.aria-expanded]="mobileNavOpen()"
+        aria-controls="public-main-nav-mobile"
+      >
+        {{ mobileNavOpen() ? 'Close' : 'Menu' }}
+      </button>
+    </div>
 
     <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
       <a
@@ -118,24 +139,6 @@
         Contact
       </a>
 
-      <button
-        type="button"
-        class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-700 transition-all duration-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-        (click)="toggleDarkMode()"
-        [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
-      >
-        @if (isDarkMode()) {
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round"></path>
-          </svg>
-        } @else {
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"></path>
-          </svg>
-        }
-      </button>
-
       <a
         routerLink="/contact"
         class="mt-2 inline-flex items-center justify-center rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
@@ -211,8 +214,12 @@
 
     <section class="space-y-3">
       <h5 class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Contact</h5>
-      <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().contactEmail }}</p>
-      <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().contactPhone }}</p>
+      <a class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" [href]="mailtoHref()">
+        {{ settings().contactEmail }}
+      </a>
+      <a class="block text-sm text-slate-600 transition-colors duration-300 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" [href]="telHref()">
+        {{ settings().contactPhone }}
+      </a>
       <p class="text-sm text-slate-600 dark:text-slate-300">{{ settings().address }}</p>
     </section>
   </div>

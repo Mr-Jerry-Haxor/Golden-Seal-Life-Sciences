@@ -22,6 +22,11 @@ export class PublicShellComponent {
   readonly mobileNavOpen = signal(false);
   readonly brandLogoUrl = computed(() => getBrandLogoUrl(this.settings().logoUrl, 'headerIcon'));
   readonly footerBrandLogoUrl = computed(() => getBrandLogoWithBackgroundUrl('headerBadge'));
+  readonly mailtoHref = computed(() => {
+    const email = this.settings().contactEmail?.trim() || '';
+    return email ? `mailto:${email}` : 'mailto:';
+  });
+  readonly telHref = computed(() => this.toTelHref(this.settings().contactPhone));
   readonly isDarkMode = this.uiPreferences.darkMode;
 
   toggleMobileNav(): void {
@@ -43,5 +48,15 @@ export class PublicShellComponent {
     }
 
     image.src = this.fallbackLogoUrl;
+  }
+
+  private toTelHref(phone: string | null | undefined): string {
+    const normalizedPhone = phone?.trim() || '';
+    if (!normalizedPhone) {
+      return 'tel:';
+    }
+
+    const compactPhone = normalizedPhone.replace(/[^\d+]/g, '');
+    return `tel:${compactPhone || normalizedPhone}`;
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -33,6 +33,11 @@ export class ContactComponent {
 
   readonly isLoading = this.siteContent.isLoading;
   readonly settings = this.siteContent.settings;
+  readonly contactEmailHref = computed(() => {
+    const email = this.settings().contactEmail?.trim() || '';
+    return email ? `mailto:${email}` : 'mailto:';
+  });
+  readonly contactPhoneHref = computed(() => this.toTelHref(this.settings().contactPhone));
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -85,5 +90,15 @@ export class ContactComponent {
     } finally {
       this.submitting = false;
     }
+  }
+
+  private toTelHref(phone: string | null | undefined): string {
+    const normalizedPhone = phone?.trim() || '';
+    if (!normalizedPhone) {
+      return 'tel:';
+    }
+
+    const compactPhone = normalizedPhone.replace(/[^\d+]/g, '');
+    return `tel:${compactPhone || normalizedPhone}`;
   }
 }

@@ -30,6 +30,16 @@ li {
   color: var(--text-muted, #4a5d50);
 }
 
+li a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dashed color-mix(in srgb, var(--brand-primary, #1a7a50) 35%, transparent 65%);
+}
+
+li a:hover {
+  color: var(--text-primary, #122117);
+}
+
 ul {
   margin: 1rem 0 0;
   padding-left: 1.2rem;
@@ -70,6 +80,14 @@ button {
 :host-context(.dark) p,
 :host-context(.dark) li {
   color: #cbd5e1;
+}
+
+:host-context(.dark) li a {
+  border-bottom-color: rgb(148 163 184 / 0.68);
+}
+
+:host-context(.dark) li a:hover {
+  color: #f8fafc;
 }
 
 :host-context(.dark) h1 {
