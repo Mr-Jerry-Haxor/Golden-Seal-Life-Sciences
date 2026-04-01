@@ -103,6 +103,34 @@ After every push to `main` or `master`, the workflow:
 
 If you use a custom domain, add a `CNAME` file at repository root. The workflow copies it to the Pages artifact.
 
+This repository already includes:
+
+- `CNAME` with `goldenseallifesciences.com`
+
+### 6. Cloudflare DNS (Apex + www)
+
+In Cloudflare DNS for `goldenseallifesciences.com`, add:
+
+- `A` record: Name `@`, Content `185.199.108.153`, Proxy status `DNS only`
+- `A` record: Name `@`, Content `185.199.109.153`, Proxy status `DNS only`
+- `A` record: Name `@`, Content `185.199.110.153`, Proxy status `DNS only`
+- `A` record: Name `@`, Content `185.199.111.153`, Proxy status `DNS only`
+- `CNAME` record: Name `www`, Target `Mr-Jerry-Haxor.github.io`, Proxy status `DNS only`
+
+Optional IPv6 records:
+
+- `AAAA` record: Name `@`, Content `2606:50c0:8000::153`, Proxy status `DNS only`
+- `AAAA` record: Name `@`, Content `2606:50c0:8001::153`, Proxy status `DNS only`
+- `AAAA` record: Name `@`, Content `2606:50c0:8002::153`, Proxy status `DNS only`
+- `AAAA` record: Name `@`, Content `2606:50c0:8003::153`, Proxy status `DNS only`
+
+Then in GitHub -> Repository Settings -> Pages:
+
+- Set custom domain to `goldenseallifesciences.com`
+- Enable `Enforce HTTPS`
+
+With this setup, both apex and `www` will resolve for the site.
+
 ## Firebase Configuration
 
 See `docs/FIREBASE_SETUP.md` and update:
