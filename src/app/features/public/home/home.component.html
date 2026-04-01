@@ -73,7 +73,7 @@
           <div class="absolute inset-x-8 bottom-8 grid gap-3">
             @for (stat of capabilityStats; track stat.label) {
               <article class="rounded-xl border border-white/25 bg-slate-950/45 px-4 py-3 backdrop-blur">
-                <p class="text-2xl font-bold text-emerald-200">{{ stat.value }}</p>
+                <p class="text-2xl font-bold text-emerald-200">{{ getCapabilityStatValue(stat) }}</p>
                 <p class="text-xs uppercase tracking-[0.2em] text-slate-200/85">{{ stat.label }}</p>
               </article>
             }
@@ -93,7 +93,7 @@
             </svg>
           </span>
           <div>
-            <h2 class="text-base font-semibold text-slate-900">{{ badge.label }}</h2>
+            <h2 class="text-base font-semibold text-slate-900">{{ getTrustBadgeLabel(badge) }}</h2>
             <p class="mt-1 text-sm text-slate-600">{{ badge.description }}</p>
           </div>
         </article>

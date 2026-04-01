@@ -5,8 +5,17 @@
 	Skip to main content
 </a>
 
-<app-ambient-background />
-<app-custom-cursor />
+@if (enableAmbientBackground()) {
+	@defer (on idle) {
+		<app-ambient-background />
+	}
+}
+
+@if (enableCustomCursor()) {
+	@defer (on idle) {
+		<app-custom-cursor />
+	}
+}
 <router-outlet />
 <app-privacy-banner />
 <app-scroll-progress-top />

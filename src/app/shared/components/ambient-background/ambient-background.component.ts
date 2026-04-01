@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -16,7 +17,8 @@ import * as THREE from 'three';
   standalone: true,
   imports: [CommonModule],
   template: '<canvas #canvas class="ambient-canvas"></canvas>',
-  styleUrl: './ambient-background.component.scss'
+  styleUrl: './ambient-background.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas', { static: true })
@@ -28,16 +30,37 @@ export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
   private renderer?: THREE.WebGLRenderer;
   private particles?: THREE.Points;
   private frameId = 0;
+  private lastFrameTimestamp = 0;
+  private isAnimationPaused = false;
+  private readonly frameIntervalMs = 1000 / 30;
+
+  private readonly onVisibilityChange = (): void => {
+    this.isAnimationPaused = document.visibilityState === 'hidden';
+    if (!this.isAnimationPaused && !this.frameId) {
+      this.lastFrameTimestamp = 0;
+      this.animate();
+    }
+  };
 
   ngAfterViewInit(): void {
+    if (!this.shouldEnableAmbientEffect()) {
+      return;
+    }
+
     this.setupScene();
-    this.zone.runOutsideAngular(() => this.animate());
+
+    this.zone.runOutsideAngular(() => {
+      document.addEventListener('visibilitychange', this.onVisibilityChange, { passive: true });
+      this.animate();
+    });
   }
 
   ngOnDestroy(): void {
     if (this.frameId) {
       cancelAnimationFrame(this.frameId);
     }
+
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
 
     this.particles?.geometry.dispose();
     (this.particles?.material as THREE.Material | undefined)?.dispose();
@@ -55,7 +78,7 @@ export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   }
 
   private setupScene(): void {
@@ -69,13 +92,14 @@ export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
-      alpha: true
+      antialias: false,
+      alpha: true,
+      powerPreference: 'low-power'
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.setSize(width, height);
 
-    const particlesCount = 1600;
+    const particlesCount = this.resolveParticleCount();
     const positions = new Float32Array(particlesCount * 3);
 
     for (let index = 0; index < particlesCount; index += 1) {
@@ -99,15 +123,48 @@ export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
     this.scene.add(this.particles);
   }
 
-  private animate(): void {
+  private animate(timestamp = 0): void {
     if (!this.scene || !this.camera || !this.renderer || !this.particles) {
       return;
     }
 
-    this.particles.rotation.y += 0.0007;
-    this.particles.rotation.x += 0.0003;
+    if (this.isAnimationPaused) {
+      this.frameId = 0;
+      return;
+    }
+
+    if (this.lastFrameTimestamp !== 0 && timestamp - this.lastFrameTimestamp < this.frameIntervalMs) {
+      this.frameId = requestAnimationFrame((nextTimestamp) => this.animate(nextTimestamp));
+      return;
+    }
+
+    const deltaFactor = this.lastFrameTimestamp === 0 ? 1 : (timestamp - this.lastFrameTimestamp) / 16.67;
+    this.lastFrameTimestamp = timestamp;
+
+    this.particles.rotation.y += 0.00055 * deltaFactor;
+    this.particles.rotation.x += 0.00022 * deltaFactor;
 
     this.renderer.render(this.scene, this.camera);
-    this.frameId = requestAnimationFrame(() => this.animate());
+    this.frameId = requestAnimationFrame((nextTimestamp) => this.animate(nextTimestamp));
+  }
+
+  private shouldEnableAmbientEffect(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const narrowViewport = window.innerWidth < 1024;
+    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+    const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const saveDataEnabled = Boolean(networkInfo?.saveData);
+
+    return !(prefersReducedMotion || coarsePointer || narrowViewport || lowCpuDevice || saveDataEnabled);
+  }
+
+  private resolveParticleCount(): number {
+    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 6;
+    return lowCpuDevice ? 700 : 1100;
   }
 }

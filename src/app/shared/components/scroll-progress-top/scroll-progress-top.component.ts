@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, NgZone, OnDestroy, inject, signal } from '@angular/core';
 
 @Component({
   selector: 'app-scroll-progress-top',
@@ -12,9 +12,12 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, signal
   styleUrl: './scroll-progress-top.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScrollProgressTopComponent implements AfterViewInit {
+export class ScrollProgressTopComponent implements AfterViewInit, OnDestroy {
+  private readonly zone = inject(NgZone);
   private readonly baseBottom = 16;
   private readonly stackedGap = 12;
+  private viewportFrameId: number | null = null;
+  private shouldRefreshBottomOffset = true;
 
   readonly radius = 19;
   readonly circumference = 2 * Math.PI * this.radius;
@@ -25,13 +28,22 @@ export class ScrollProgressTopComponent implements AfterViewInit {
   readonly hostBottom = signal(this.baseBottom);
 
   ngAfterViewInit(): void {
-    this.updateProgress();
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      window.addEventListener('resize', this.onResize, { passive: true });
+    });
+
+    this.scheduleViewportUpdate(true);
   }
 
-  @HostListener('window:scroll')
-  @HostListener('window:resize')
-  onViewportChanged(): void {
-    this.updateProgress();
+  ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('resize', this.onResize);
+
+    if (this.viewportFrameId !== null) {
+      window.cancelAnimationFrame(this.viewportFrameId);
+      this.viewportFrameId = null;
+    }
   }
 
   scrollToTop(): void {
@@ -41,13 +53,37 @@ export class ScrollProgressTopComponent implements AfterViewInit {
     });
   }
 
-  private updateProgress(): void {
+  private readonly onScroll = (): void => {
+    this.scheduleViewportUpdate(false);
+  };
+
+  private readonly onResize = (): void => {
+    this.scheduleViewportUpdate(true);
+  };
+
+  private scheduleViewportUpdate(refreshBottomOffset: boolean): void {
+    this.shouldRefreshBottomOffset = this.shouldRefreshBottomOffset || refreshBottomOffset;
+
+    if (this.viewportFrameId !== null) {
+      return;
+    }
+
+    this.viewportFrameId = window.requestAnimationFrame(() => {
+      this.viewportFrameId = null;
+      this.updateProgress(this.shouldRefreshBottomOffset);
+      this.shouldRefreshBottomOffset = false;
+    });
+  }
+
+  private updateProgress(refreshBottomOffset: boolean): void {
     const doc = document.documentElement;
     const scrollTop = window.scrollY || doc.scrollTop || 0;
     const scrollableHeight = doc.scrollHeight - doc.clientHeight;
     const canScroll = scrollableHeight > 0;
 
-    this.updateBottomOffset();
+    if (refreshBottomOffset) {
+      this.updateBottomOffset();
+    }
 
     this.isScrollable.set(canScroll);
     if (!canScroll) {

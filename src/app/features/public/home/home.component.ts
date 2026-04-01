@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnDestroy, computed, effect, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { getBrandLogoWithBackgroundUrl } from '../../../core/config/brand-assets.config';
 import { ProductCategory } from '../../../core/models/site.models';
@@ -15,10 +15,21 @@ type ServiceCard = {
   stat: string;
 };
 
+type CounterId = 'programs' | 'team' | 'experience' | 'projects';
+
 type TrustBadge = {
   iconPath: string;
   label: string;
   description: string;
+  counterId?: CounterId;
+  suffix?: string;
+};
+
+type CapabilityStat = {
+  label: string;
+  value?: string;
+  counterId?: CounterId;
+  suffix?: string;
 };
 
 type WhyChooseItem = {
@@ -55,6 +66,20 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly hostElement = inject(ElementRef<HTMLElement>);
   private revealObserver: IntersectionObserver | null = null;
   private revealAnimationFrameId: number | null = null;
+  private counterAnimationFrameId: number | null = null;
+  private hasAnimatedCounters = false;
+
+  private readonly counterTargets = {
+    programs: 50,
+    team: 20,
+    experience: 10,
+    projects: 50
+  } as const;
+
+  readonly programsCount = signal(1);
+  readonly teamCount = signal(1);
+  readonly experienceCount = signal(1);
+  readonly projectsCount = signal(1);
 
   readonly content = this.siteContent.content;
   readonly products = this.siteContent.products;
@@ -72,14 +97,18 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     {
       iconPath:
         'M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z',
-      label: '10+ Years Experience',
-      description: 'A decade of biotech expertise across agriculture, aquaculture, and industrial chemistry.'
+      label: 'Years Experience',
+      description: 'A decade of biotech expertise across agriculture, aquaculture, and industrial chemistry.',
+      counterId: 'experience',
+      suffix: '+'
     },
     {
       iconPath:
         'M3 17.25V9.75m6 7.5V6.75m6 10.5v-4.5m6 4.5V4.5M1.5 21h21',
-      label: '50+ Projects',
-      description: 'Trusted delivery across pilot studies, process optimization, and commercial deployments.'
+      label: 'Projects',
+      description: 'Trusted delivery across pilot studies, process optimization, and commercial deployments.',
+      counterId: 'projects',
+      suffix: '+'
     }
   ];
 
@@ -207,9 +236,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }));
   });
 
-  readonly capabilityStats = [
-    { label: 'Programs Deployed', value: '50+' },
-    { label: 'Scientific Team', value: '20+' },
+  readonly capabilityStats: CapabilityStat[] = [
+    { label: 'Programs Deployed', counterId: 'programs', suffix: '+' },
+    { label: 'Scientific Team', counterId: 'team', suffix: '+' },
     { label: 'Support Coverage', value: '24/7' }
   ];
 
@@ -241,11 +270,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       }
 
       this.scheduleRevealSetup();
+      this.scheduleCounterAnimation();
     });
   }
 
   ngAfterViewInit(): void {
     this.scheduleRevealSetup();
+    this.scheduleCounterAnimation();
   }
 
   ngOnDestroy(): void {
@@ -256,10 +287,31 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       window.cancelAnimationFrame(this.revealAnimationFrameId);
       this.revealAnimationFrameId = null;
     }
+
+    if (this.counterAnimationFrameId !== null) {
+      window.cancelAnimationFrame(this.counterAnimationFrameId);
+      this.counterAnimationFrameId = null;
+    }
   }
 
   trackCta(ctaName: string, placement: string): void {
     void this.analytics.trackCtaClick(ctaName, placement);
+  }
+
+  getTrustBadgeLabel(badge: TrustBadge): string {
+    if (!badge.counterId) {
+      return badge.label;
+    }
+
+    return `${this.getCounterValue(badge.counterId)}${badge.suffix ?? ''} ${badge.label}`;
+  }
+
+  getCapabilityStatValue(stat: CapabilityStat): string {
+    if (!stat.counterId) {
+      return stat.value || '';
+    }
+
+    return `${this.getCounterValue(stat.counterId)}${stat.suffix ?? ''}`;
   }
 
   private scheduleRevealSetup(): void {
@@ -319,5 +371,84 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         this.revealObserver?.observe(node);
       }
     });
+  }
+
+  private getCounterValue(counterId: CounterId): number {
+    switch (counterId) {
+      case 'programs':
+        return this.programsCount();
+      case 'team':
+        return this.teamCount();
+      case 'experience':
+        return this.experienceCount();
+      case 'projects':
+        return this.projectsCount();
+      default:
+        return 1;
+    }
+  }
+
+  private scheduleCounterAnimation(): void {
+    if (typeof window === 'undefined' || this.isLoading() || this.hasAnimatedCounters) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      this.completeCounterAnimation();
+      return;
+    }
+
+    this.startCounterAnimation();
+  }
+
+  private startCounterAnimation(): void {
+    if (this.counterAnimationFrameId !== null) {
+      window.cancelAnimationFrame(this.counterAnimationFrameId);
+    }
+
+    const animationDurationMs = 1150;
+    const animationStart = window.performance.now();
+
+    const step = (timestamp: number): void => {
+      const progress = Math.min(1, (timestamp - animationStart) / animationDurationMs);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      this.updateCounterProgress(easedProgress);
+
+      if (progress >= 1) {
+        this.completeCounterAnimation();
+        return;
+      }
+
+      this.counterAnimationFrameId = window.requestAnimationFrame(step);
+    };
+
+    this.counterAnimationFrameId = window.requestAnimationFrame(step);
+  }
+
+  private updateCounterProgress(progress: number): void {
+    this.programsCount.set(this.interpolateCounterValue(this.counterTargets.programs, progress));
+    this.teamCount.set(this.interpolateCounterValue(this.counterTargets.team, progress));
+    this.experienceCount.set(this.interpolateCounterValue(this.counterTargets.experience, progress));
+    this.projectsCount.set(this.interpolateCounterValue(this.counterTargets.projects, progress));
+  }
+
+  private interpolateCounterValue(target: number, progress: number): number {
+    const nextValue = 1 + (target - 1) * progress;
+    return Math.min(target, Math.max(1, Math.round(nextValue)));
+  }
+
+  private completeCounterAnimation(): void {
+    if (this.counterAnimationFrameId !== null) {
+      window.cancelAnimationFrame(this.counterAnimationFrameId);
+      this.counterAnimationFrameId = null;
+    }
+
+    this.programsCount.set(this.counterTargets.programs);
+    this.teamCount.set(this.counterTargets.team);
+    this.experienceCount.set(this.counterTargets.experience);
+    this.projectsCount.set(this.counterTargets.projects);
+    this.hasAnimatedCounters = true;
   }
 }

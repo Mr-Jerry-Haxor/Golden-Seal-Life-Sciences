@@ -1,9 +1,9 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   NgZone,
   OnDestroy,
   ViewChild,
@@ -16,7 +16,8 @@ import { gsap } from 'gsap';
   standalone: true,
   imports: [CommonModule],
   template: '<div #ring class="cursor-ring"></div><div #core class="cursor-core"></div>',
-  styleUrl: './custom-cursor.component.scss'
+  styleUrl: './custom-cursor.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomCursorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('ring', { static: true })
@@ -39,8 +40,15 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
   private isHoveringInteractive = false;
   private isPointerDown = false;
   private visible = false;
+  private enabled = false;
+  private listenerTeardowns: Array<() => void> = [];
 
   ngAfterViewInit(): void {
+    if (typeof window === 'undefined' || !this.shouldEnableCursor()) {
+      return;
+    }
+
+    this.enabled = true;
     this.document.body.classList.add('custom-cursor-active');
 
     this.zone.runOutsideAngular(() => {
@@ -70,16 +78,21 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
         ease: 'power2.out'
       });
 
+      this.registerPointerListeners();
       this.applyCursorScale();
     });
   }
 
   ngOnDestroy(): void {
-    this.document.body.classList.remove('custom-cursor-active');
+    this.listenerTeardowns.forEach((teardown) => teardown());
+    this.listenerTeardowns = [];
+
+    if (this.enabled) {
+      this.document.body.classList.remove('custom-cursor-active');
+    }
   }
 
-  @HostListener('window:pointermove', ['$event'])
-  onPointerMove(event: PointerEvent): void {
+  private readonly onPointerMove = (event: PointerEvent): void => {
     if (event.pointerType && event.pointerType !== 'mouse') {
       return;
     }
@@ -90,31 +103,65 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
     this.coreYTo?.(event.clientY);
 
     this.revealCursor();
-  }
+  };
 
-  @HostListener('document:mouseover', ['$event'])
-  onHover(event: MouseEvent): void {
+  private readonly onHover = (event: MouseEvent): void => {
     this.isHoveringInteractive = this.isInteractive(event.target);
     this.applyCursorScale();
-  }
+  };
 
-  @HostListener('document:mousedown')
-  onPointerDown(): void {
+  private readonly onPointerDown = (): void => {
     this.isPointerDown = true;
     this.applyCursorScale();
-  }
+  };
 
-  @HostListener('document:mouseup')
-  onPointerUp(): void {
+  private readonly onPointerUp = (): void => {
     this.isPointerDown = false;
     this.applyCursorScale();
-  }
+  };
 
-  @HostListener('window:blur')
-  onWindowBlur(): void {
+  private readonly onWindowBlur = (): void => {
     this.isPointerDown = false;
     this.isHoveringInteractive = false;
     this.applyCursorScale();
+  };
+
+  private registerPointerListeners(): void {
+    const addWindowListener = <K extends keyof WindowEventMap>(
+      type: K,
+      listener: (event: WindowEventMap[K]) => void
+    ): void => {
+      window.addEventListener(type, listener as EventListener, { passive: true });
+      this.listenerTeardowns.push(() => {
+        window.removeEventListener(type, listener as EventListener);
+      });
+    };
+
+    const addDocumentListener = <K extends keyof DocumentEventMap>(
+      type: K,
+      listener: (event: DocumentEventMap[K]) => void
+    ): void => {
+      document.addEventListener(type, listener as EventListener, { passive: true });
+      this.listenerTeardowns.push(() => {
+        document.removeEventListener(type, listener as EventListener);
+      });
+    };
+
+    addWindowListener('pointermove', this.onPointerMove);
+    addDocumentListener('mouseover', this.onHover);
+    addDocumentListener('mousedown', this.onPointerDown);
+    addDocumentListener('mouseup', this.onPointerUp);
+    addWindowListener('blur', this.onWindowBlur);
+  }
+
+  private shouldEnableCursor(): boolean {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+    const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const saveDataEnabled = Boolean(networkInfo?.saveData);
+
+    return !(prefersReducedMotion || coarsePointer || lowCpuDevice || saveDataEnabled);
   }
 
   private isInteractive(target: EventTarget | null): boolean {
