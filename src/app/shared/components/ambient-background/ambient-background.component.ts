@@ -153,18 +153,26 @@ export class AmbientBackgroundComponent implements AfterViewInit, OnDestroy {
       return false;
     }
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    const narrowViewport = window.innerWidth < 1024;
-    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
-    const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const saveDataEnabled = Boolean(networkInfo?.saveData);
+    try {
+      const prefersReducedMotion = this.matchesMediaQuery('(prefers-reduced-motion: reduce)');
+      const coarsePointer = this.matchesMediaQuery('(pointer: coarse)');
+      const narrowViewport = window.innerWidth < 1024;
+      const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+      const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const saveDataEnabled = Boolean(networkInfo?.saveData);
 
-    return !(prefersReducedMotion || coarsePointer || narrowViewport || lowCpuDevice || saveDataEnabled);
+      return !(prefersReducedMotion || coarsePointer || narrowViewport || lowCpuDevice || saveDataEnabled);
+    } catch {
+      return false;
+    }
   }
 
   private resolveParticleCount(): number {
     const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 6;
     return lowCpuDevice ? 700 : 1100;
+  }
+
+  private matchesMediaQuery(query: string): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
   }
 }

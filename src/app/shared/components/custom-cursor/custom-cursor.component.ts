@@ -155,13 +155,17 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
   }
 
   private shouldEnableCursor(): boolean {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
-    const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const saveDataEnabled = Boolean(networkInfo?.saveData);
+    try {
+      const prefersReducedMotion = this.matchesMediaQuery('(prefers-reduced-motion: reduce)');
+      const coarsePointer = this.matchesMediaQuery('(pointer: coarse)');
+      const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+      const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const saveDataEnabled = Boolean(networkInfo?.saveData);
 
-    return !(prefersReducedMotion || coarsePointer || lowCpuDevice || saveDataEnabled);
+      return !(prefersReducedMotion || coarsePointer || lowCpuDevice || saveDataEnabled);
+    } catch {
+      return false;
+    }
   }
 
   private isInteractive(target: EventTarget | null): boolean {
@@ -191,5 +195,9 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
     this.visible = true;
     this.ringRef.nativeElement.classList.add('is-visible');
     this.coreRef.nativeElement.classList.add('is-visible');
+  }
+
+  private matchesMediaQuery(query: string): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
   }
 }

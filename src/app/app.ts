@@ -37,17 +37,27 @@ export class App {
   }
 
   private configureVisualEffectsMode(): void {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    const narrowViewport = window.innerWidth < 1024;
-    const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
-    const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const saveDataEnabled = Boolean(networkInfo?.saveData);
+    try {
+      const prefersReducedMotion = this.matchesMediaQuery('(prefers-reduced-motion: reduce)');
+      const coarsePointer = this.matchesMediaQuery('(pointer: coarse)');
+      const narrowViewport = window.innerWidth < 1024;
+      const lowCpuDevice = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+      const networkInfo = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const saveDataEnabled = Boolean(networkInfo?.saveData);
 
-    const disableAmbientBackground = prefersReducedMotion || coarsePointer || narrowViewport || lowCpuDevice || saveDataEnabled;
-    const disableCustomCursor = prefersReducedMotion || coarsePointer || lowCpuDevice || saveDataEnabled;
+      const disableAmbientBackground =
+        prefersReducedMotion || coarsePointer || narrowViewport || lowCpuDevice || saveDataEnabled;
+      const disableCustomCursor = prefersReducedMotion || coarsePointer || lowCpuDevice || saveDataEnabled;
 
-    this.enableAmbientBackground.set(!disableAmbientBackground);
-    this.enableCustomCursor.set(!disableCustomCursor);
+      this.enableAmbientBackground.set(!disableAmbientBackground);
+      this.enableCustomCursor.set(!disableCustomCursor);
+    } catch {
+      this.enableAmbientBackground.set(true);
+      this.enableCustomCursor.set(false);
+    }
+  }
+
+  private matchesMediaQuery(query: string): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
   }
 }

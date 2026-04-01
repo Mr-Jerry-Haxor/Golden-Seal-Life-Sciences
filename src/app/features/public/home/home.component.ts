@@ -338,7 +338,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.revealObserver?.disconnect();
     this.revealObserver = null;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = this.matchesMediaQuery('(prefers-reduced-motion: reduce)');
     if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
       revealNodes.forEach((node) => {
         node.classList.remove('opacity-0', 'translate-y-8');
@@ -393,7 +393,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = this.matchesMediaQuery('(prefers-reduced-motion: reduce)');
     if (prefersReducedMotion) {
       this.completeCounterAnimation();
       return;
@@ -450,5 +450,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.experienceCount.set(this.counterTargets.experience);
     this.projectsCount.set(this.counterTargets.projects);
     this.hasAnimatedCounters = true;
+  }
+
+  private matchesMediaQuery(query: string): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
   }
 }
