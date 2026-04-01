@@ -1,11 +1,17 @@
 const CLOUDINARY_UPLOAD_MARKER = '/upload/';
 const CLOUDINARY_HOST = 'res.cloudinary.com';
+const NEW_DEFAULT_LOGO_URL =
+  'https://res.cloudinary.com/dvqdwq4wa/image/upload/v1775057069/golden-seal-life-sciences/8fad8b50f20e7c9f1bb384a75da41da081020781a3ab9ea8b4acaf4234723b70.png';
+const LEGACY_LOGO_IDENTIFIERS = [
+  'im3sff6vtb9revpoiil5',
+  'wcdtehetosq3esxtubej'
+];
 
 export const GOLDEN_SEAL_LOGO_URL =
-  'https://res.cloudinary.com/dvqdwq4wa/image/upload/v1774961077/im3sff6vtb9revpoiil5.png';
+  NEW_DEFAULT_LOGO_URL;
 
 export const GOLDEN_SEAL_LOGO_WITH_BG_URL =
-  'https://res.cloudinary.com/dvqdwq4wa/image/upload/v1774961077/wcdtehetosq3esxtubej.png';
+  NEW_DEFAULT_LOGO_URL;
 
 export const BRAND_LOGO_TRANSFORMS = {
   headerIcon: 'f_auto,q_auto,dpr_auto,c_fit,w_96,h_96',
@@ -30,6 +36,11 @@ function isCloudinaryImageUrl(url: string): boolean {
 function resolveBrandSourceUrl(sourceUrl: string | null | undefined): string {
   const normalizedSource = sourceUrl?.trim() || '';
   if (!normalizedSource) {
+    return GOLDEN_SEAL_LOGO_URL;
+  }
+
+  const isLegacyLogoUrl = LEGACY_LOGO_IDENTIFIERS.some((identifier) => normalizedSource.includes(identifier));
+  if (isLegacyLogoUrl) {
     return GOLDEN_SEAL_LOGO_URL;
   }
 
